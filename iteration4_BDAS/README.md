@@ -7,11 +7,11 @@ A reproducible gallstone-prediction project organised using **CRISP-DM (Cross-In
 | Workflow | Notebook | Models and preparation |
 | --- | --- | --- |
 | Main report experiments | [run_workflow.ipynb](run_workflow.ipynb) | Logistic regression, random forest, XGBoost, LightGBM and stacking; CART/RFE20; four preprocessing benchmarks and training-only Optuna tuning |
-| Native PySpark in Colab | [run_spark_workflow.ipynb](run_spark_workflow.ipynb) | Spark logistic regression, random forest and GBT; all source predictors, continuous standardization and training-only Spark CV |
+| Native PySpark in Colab | [run_spark_workflow.ipynb](../PySpark/run_spark_workflow.ipynb) | Spark logistic regression, random forest and GBT; all source predictors, continuous standardization and training-only Spark CV |
 
-[Open the native Spark notebook in Colab](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/iteration4_BDAS/run_spark_workflow.ipynb) · [Open the main notebook in Colab](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/iteration4_BDAS/run_workflow.ipynb) · [Read the report](Report/main.pdf)
+[Open the native Spark notebook in Colab](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/run_spark_workflow.ipynb) · [Open the main notebook in Colab](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/iteration4_BDAS/run_workflow.ipynb) · [Read the report](Report/main.pdf)
 
-The two workflows are separate implementations. The committed report metrics come from the main five-family Python workflow. Native Spark training has not been executed for the newly created standalone notebook; its cells and notebook structure have been validated.
+The two workflows are separate implementations. The committed report metrics come from the main five-family Python workflow. The saved Spark execution notebook and visualization notebook retain the author's Colab outputs. Setup/path changes were validated locally; Spark training was not rerun during repository organization.
 
 ## 1. Business understanding
 
@@ -79,7 +79,7 @@ cd INFOSYS722_BDAS/iteration4_BDAS
 python run_workflow.py --trials 20
 ```
 
-Use a Python interpreter with the dependencies in [requirements.txt](requirements.txt). An existing suitable environment can be reused; no installation is performed automatically. The author's local `.venv` link is machine-specific and is excluded from Git. Native Spark additionally requires the dependencies in [requirements-spark.txt](requirements-spark.txt) and Java.
+Use a Python interpreter with the dependencies in [requirements.txt](requirements.txt). An existing suitable environment can be reused; no installation is performed automatically. The author's local `.venv` link is machine-specific and is excluded from Git. Native Spark additionally requires the dependencies in [requirements-spark.txt](../PySpark/requirements-spark.txt) and Java.
 
 The committed configuration records exact package versions and an input-data signature. If the default saved run differs from the current configuration, the main workflow automatically chooses a stable directory under `results/holdout_runs/<configuration-id>/`. Identical configurations resume completed evaluations. An explicitly supplied incompatible directory is rejected with the differing fields listed. This prevents mixing local and Colab checkpoints.
 
@@ -101,7 +101,7 @@ For an automatically separated run, replace `results/holdout` with the printed r
 
 ### Run in Google Colab
 
-Open the relevant notebook using the links above. The native Spark notebook embeds its implementation: upload [dataset_gallstone](data/raw/dataset_gallstone) when prompted and run the cells in order. PySpark, scikit-learn and Java must already be available. Results are saved under the printed `results/spark_holdout/<configuration-id>/` folder; re-running its training cell retrains the native Spark models.
+Open the relevant notebook using the links above. The native Spark notebook loads `../PySpark/spark_workflow.py` from a repository checkout, cloning this repository in Colab if needed. It installs only missing Python dependencies and checks Java. Google Drive mounting is optional. Results are saved under the printed `PySpark/results/spark_holdout/` folder; re-running its training cell retrains the native Spark models.
 
 For the main notebook, clone this repository in a Colab cell:
 
@@ -109,7 +109,7 @@ For the main notebook, clone this repository in a Colab cell:
 !git clone https://github.com/QuyDuong106/INFOSYS722_BDAS.git /content/INFOSYS722_BDAS
 ```
 
-Set `PROJECT_ROOT = Path('/content/INFOSYS722_BDAS/iteration4_BDAS')` in the notebook's setup cell. Use a runtime with the required packages, run the cells in order and save results before the session ends. Neither notebook mounts Google Drive or installs packages automatically.
+Set `PROJECT_ROOT = Path('/content/INFOSYS722_BDAS/iteration4_BDAS')` in the notebook's setup cell. Use a runtime with the required packages, run the cells in order and save results before the session ends. The main five-family notebook does not mount Drive or install packages automatically. The Spark notebook offers optional Drive mounting and installs only missing Python packages.
 
 ### Validation
 
@@ -124,14 +124,17 @@ Only load the committed model pickles as trusted project artifacts, using the re
 ## Repository layout
 
 ```text
+PySpark/
+  run_spark_workflow.ipynb    Saved native Spark execution notebook
+  spark_visualization_colab.ipynb  Saved exploratory figures
+  spark_workflow.py           Native Spark implementation
+  requirements-spark.txt      Spark dependency declaration
 iteration4_BDAS/
   run_workflow.ipynb          Main five-family notebook
-  run_spark_workflow.ipynb    Standalone native Spark notebook
   run_workflow.py             Command-line entrypoint
   holdout_workflow.py         Holdout benchmarks, resume and aggregation
   optuna_holdout.py           Training-only tuning
   modeling.py, utils.py       Estimators and preparation helpers
-  spark_workflow.py           Native Spark implementation
   data/raw/                  Source dataset
   results/holdout/            Completed main evidence and pipelines
   scripts/                   Report table/figure generation
