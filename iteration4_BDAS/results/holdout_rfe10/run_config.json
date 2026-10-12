@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "signature": "d14de55c7bec0a380289be7ecb459ab34d611980e1320e4e9875d84673bddffe",
+  "seeds": [
+    42,
+    7,
+    21,
+    84,
+    123
+  ],
+  "models": [
+    "logistic",
+    "random_forest",
+    "xgboost",
+    "lightgbm",
+    "stacking",
+    "dummy_prior"
+  ],
+  "trials": 20,
+  "test_fraction": 0.3,
+  "inner_folds": 3,
+  "top_k": 10,
+  "threshold": 0.5,
+  "tuned_variant": "rfe_standard",
+  "packages": {
+    "optuna": "5.0.0",
+    "scikit-learn": "1.9.1",
+    "xgboost": "3.4.1",
+    "lightgbm": "4.7.0",
+    "numpy": "2.5.3",
+    "pandas": "3.0.6"
+  },
+  "variants": {
+    "rfe10_standard": {
+      "selection": "rfe",
+      "scaling": "standard",
+      "top_k": 10
+    }
+  }
+}

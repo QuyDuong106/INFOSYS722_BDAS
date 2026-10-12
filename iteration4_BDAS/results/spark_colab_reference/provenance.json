@@ -1,0 +1,21 @@
+{
+  "source_repository": "https://github.com/QuyDuong106/INFOSYS722_BDAS",
+  "source_commit": "3937136e6819c9251de82b1e187329b35be85976",
+  "source_notebook": "PySpark/run_spark_workflow.ipynb",
+  "evidence": "Author-saved Colab result display; numeric metrics rounded to 6 decimal places in the saved table",
+  "models": [
+    "logistic",
+    "random_forest",
+    "gbt"
+  ],
+  "preparation": "all 38 source predictors; continuous standardization, withMean=False",
+  "tuning": "training-only three-fold Spark CrossValidator",
+  "seeds": [
+    42,
+    7,
+    21,
+    84,
+    123
+  ],
+  "notebook_outputs_preserved": true
+}

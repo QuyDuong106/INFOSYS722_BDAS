@@ -1,145 +1,128 @@
-# INFOSYS722 BDAS — Iteration 4
+# INFOSYS722 BDAS — Iteration 4 with PySpark
 
-A reproducible gallstone-prediction project organised using **CRISP-DM (Cross-Industry Standard Process for Data Mining)**. The Iteration 4 development and report-writing period is **21 September–16 October 2026**.
+This gallstone-prediction project follows **CRISP-DM**. Development and report writing cover **21 September–16 October 2026**. The primary submission workflow now uses native Spark; the earlier five-family Python/Optuna experiments remain separately reproducible.
 
-## Start here
+## Open in Google Colab
 
-| Workflow | Notebook | Models and preparation |
-| --- | --- | --- |
-| Main report experiments | [run_workflow.ipynb](run_workflow.ipynb) | Logistic regression, random forest, XGBoost, LightGBM and stacking; CART/RFE20; four preprocessing benchmarks and training-only Optuna tuning |
-| Native PySpark in Colab | [run_spark_workflow.ipynb](../PySpark/run_spark_workflow.ipynb) | Spark logistic regression, random forest and GBT; all source predictors, continuous standardization and training-only Spark CV |
+| Notebook | Purpose |
+| --- | --- |
+| [Primary Spark iterations](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/run_spark_iterations_colab.ipynb) | All-field standardization, CART20, RFE20 and RFE10; five holdouts and training-only Spark CV |
+| [Saved Spark execution](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/run_spark_workflow.ipynb) | Author's completed all-field run and saved native Spark result table |
+| [Saved Spark visualization](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/spark_visualization_colab.ipynb) | Spark summaries, distributions, outcome comparisons and correlations |
+| [Retained Python prototype](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/iteration4_BDAS/run_python_workflow.ipynb) | Five-family fixed benchmarks and Optuna tuning |
 
-[Open the native Spark notebook in Colab](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/run_spark_workflow.ipynb) · [Open the main notebook in Colab](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/iteration4_BDAS/run_workflow.ipynb) · [Read the report](Report/main.pdf)
-
-The two workflows are separate implementations. The committed report metrics come from the main five-family Python workflow. The saved Spark execution notebook and visualization notebook retain the author's Colab outputs. Setup/path changes were validated locally; Spark training was not rerun during repository organization.
+[Report PDF](Report/main.pdf) · [PySpark implementation](../PySpark) · [Iteration 4 files](.)
 
 ## 1. Business understanding
 
-Investigate whether routinely available demographic, clinical, laboratory and body-composition measurements can support early gallstone-risk assessment. This is an academic proof of concept for prioritising further clinical assessment. It is not a clinical deployment or a replacement for diagnostic imaging.
-
-The project benchmarks are ROC–AUC **at least 0.80** and gallstone sensitivity **at least 0.80**, alongside specificity, calibration-related loss, false negatives, stability and interpretability. These are project targets rather than clinical thresholds.
+Investigate whether routine demographic, comorbidity, laboratory and body-composition data can support early gallstone risk assessment. This is an academic decision-support prototype rather than a deployed clinical system. Project benchmarks are ROC–AUC and gallstone sensitivity both at least 0.80, alongside specificity, false negatives, calibration-related loss, stability and interpretability.
 
 ## 2. Data understanding
 
-The source cohort contains **319 records: 161 gallstone cases and 158 controls**, with 38 source predictors. Raw files are retained in [data/raw](data/raw). Dataset provenance and exploratory analysis are documented in the report and its bibliography.
-
-The source outcome uses `0 = gallstones present` and `1 = absent`; modelling recodes it to `1 = present` and `0 = absent`. Loading validates numeric predictors, binary outcomes and duplicate records, and excludes the exported row index and patient identifier from predictors. Original ordinal/binary category codes are preserved.
+The [raw dataset](data/raw/dataset_gallstone) has 319 records (161 cases and 158 controls) and 38 predictors. Source outcome 0 means gallstones present; model class 1 means present. The loaders validate numeric fields and outcome codes, check duplicates and remove exported index/identifier fields. Existing ordinal/binary predictor codes are preserved. The Spark visualization notebook supports exploratory understanding; full-cohort plots are not held-out model-selection evidence. Dataset provenance is documented in the report bibliography.
 
 ## 3. Data preparation
 
-The main workflow compares four controlled preparation variants:
+Native Spark prepares four matched versions: all source fields, CART importance selection with 20 fields, CART-based recursive feature elimination with 20 fields, and RFE with 10 fields. Continuous missing values use training medians; coded fields use training modes. Continuous values are divided by their training sample standard deviation without centering, matching the saved Spark baseline; category codes are passed through unchanged.
 
-| Variant | Feature selection | Continuous transformations |
-| --- | --- | --- |
-| `cart_yeo_standard` | CART importance, 20 source fields | Yeo–Johnson then standardization |
-| `cart_standard` | CART importance, 20 source fields | Standardization |
-| `rfe_yeo_standard` | CART-based RFE, 20 source fields | Yeo–Johnson then standardization |
-| `rfe_standard` | CART-based RFE, 20 source fields | Standardization |
+[spark_feature_selection.py](../PySpark/spark_feature_selection.py) implements persistable native Spark selectors. RFE removes one least-important field at a time and refits a Spark CART. Selection and scaling are fitted again in every inner CV fit, excluding validation/test outcomes. Saved Spark models retain the actual selected source fields.
 
-Continuous missing values use training medians; coded categories use training modes. Category codes are passed through without one-hot expansion. Imputation, selection and transformation are fitted again inside every training CV fold. Stacking also uses complete base-learner preparation pipelines inside its own out-of-fold construction.
-
-The supplementary native Spark implementation uses all source predictors with median/mode imputation and continuous standardization; it does not implement these RFE20 comparisons.
+The retained Python prototype separately compares CART/RFE20 with Yeo–Johnson plus standardization or standardization alone, and now includes a completed RFE10/standardization iteration. Python scores are not labelled as Spark results.
 
 ## 4. Modelling
 
-All experiments use **five stratified 70/30 holdouts**, with seeds **42, 7, 21, 84 and 123**. Each split contains **223 training and 96 test records**. Iteration 4 uses holdout evaluation only; leave-one-out evaluation is outside this submission.
+All workflows use five stratified 70/30 holdouts with seeds 42, 7, 21, 84 and 123: 223 training and 96 test records per split. Iteration 4 uses holdout only. Native Spark model families are logistic regression, random forest and gradient-boosted trees. Tuning uses three stratified CV folds exclusively inside training, with full pipeline preparation refitted per fold. The classifier threshold is fixed at 0.5.
 
-For the main workflow, all five predictive families and a training-prior dummy receive fixed-parameter benchmarks in each preparation variant. The predeclared `rfe_standard` variant additionally receives **20 Optuna TPE trials per predictive family per seed**, using mean ROC–AUC from **three-fold CV within training only**. No held-out test record enters tuning, preprocessing or model selection.
+Native grids compare logistic regularisation 0.001/0.01/0.1; forest depth 3/5 and tree count 40/60; and GBT depth 2/3 and step size 0.05/0.1. The selector uses depth 5/minimum leaf size 4; controlled preparation versions compare feature-selection method and 20/10-field width. Spark extension outputs retain every grid candidate and CV score.
 
-The searches cover logistic regularisation; forest tree count, depth, leaf size and feature sampling; and boosting tree count, learning rate, sampling/leaf controls and L2 regularisation. Stacking jointly searches twelve layer-1 XGBoost/LightGBM parameters. Both stacking logistic components remain fixed at `C=1`, as does its forest. Standalone logistic regression is tuned separately. Detailed ranges appear in the report and [optuna_holdout.py](optuna_holdout.py).
+The Python prototype retains logistic regression, random forest, XGBoost, LightGBM and stacking. Its primary RFE20/standardization version has 20 Optuna trials per predictive family/seed. Stacking tunes only layer-1 XGBoost/LightGBM while its two logistic components stay at C=1 and its forest remains fixed.
 
-The native Spark notebook uses Spark CrossValidator with three training-only folds for its logistic regression, forest and GBT parameter grids. It does not use Optuna, XGBoost, LightGBM or stacking.
+## 5. Evaluation and iteration evidence
 
-## 5. Evaluation
+Completed evidence is clearly separated by implementation:
 
-Evaluation fixes the classification threshold at **0.5**, with disease-positive class 1. Main outputs include ROC–AUC, average precision, accuracy, balanced accuracy, precision, sensitivity, specificity, F1, false-negative rate, log loss, confusion counts and execution time.
+- [Python baseline/tuning results](results/holdout): 150 model evaluations and 500 Optuna trials; metrics, selected fields, parameters, models and predictions.
+- [New Python RFE10 results](results/holdout_rfe10): 30 matched fixed-model evaluations; exactly ten fields in every fitted selector/stacking base. The report compares RFE10 against the fixed RFE20 reference rather than assuming fewer fields improve prediction.
+- [Measured Spark Colab baseline](results/spark_colab_reference): 15 native model/seed evaluations recovered from the author's saved notebook display, with source commit and six-decimal display precision recorded.
+- New native Spark CART20/RFE20/RFE10 code is implemented and includes runnable integration checks. Its scores enter the report only after completing a Spark extension run; the current report marks those additional native results as pending.
 
-[results/holdout](results/holdout) contains the completed main run:
+The report includes AUC, sensitivity, specificity, accuracy, confusion matrices and further prototype metrics, with highest execution-table means bold. Five overlapping holdouts describe partition sensitivity rather than independent clinical replication. Test data never supplies the tuning objective.
 
-- **150 model evaluations**, **14,400 test predictions** and **500 Optuna trials**.
-- Per-seed split membership and per-model fitted pipelines, selected features, predictions, trial evidence and parameters.
-- Aggregate [benchmark metrics](results/holdout/benchmark_metrics.csv), [tuned metrics](results/holdout/tuned_metrics.csv), [mean/SD/min/max summaries](results/holdout/summary.csv) and [matched tuning changes](results/holdout/tuning_comparison.csv).
-- Training-CV-selected families and their corresponding test outcomes, without selecting families from test results.
+## 6. Deployment, reproducibility and future work
 
-The report separates training-CV algorithm-selection evidence, held-out results and controlled iteration comparisons. Highest column means are bold in its execution table. Averaged confusion matrices are generated from the five matched test splits. Tuning does not improve every family: measured changes and sensitivity/AUC trade-offs are retained.
+The distribution mechanism is GitHub plus Google Colab notebooks. The report appendix links to the repository and current notebooks. Future work includes completing native feature-selection runs, broader training-only searches, calibration/threshold procedures, external validation and preservation of full runtime/tuning provenance.
 
-Five holdout test sets overlap; their variation measures sensitivity to partition choice rather than independent external validation. The small single-source cohort, finite search budget and fixed threshold limit generalisation.
+### Primary Spark execution
 
-## 6. Deployment and reproducibility
+Open the primary Colab notebook and run setup, integration checks and experiments in order. Setup checks Java and installs only missing Spark dependencies in Colab. Existing local environments are not reinstalled. An up-to-date repository checkout is used or cloned automatically. New native output is written to a configuration-specific `results/spark_iterations/` directory with data/code signatures; identical configurations resume completed models.
 
-Deployment in this iteration means packaging reproducible research code, notebooks, evidence and the report. No prediction service or clinical system is deployed. External validation, calibration and clinically justified threshold selection remain future work.
-
-### Run locally
-
-Clone the repository and enter the project:
+From a Spark-capable local checkout:
 
 ```bash
-git clone https://github.com/QuyDuong106/INFOSYS722_BDAS.git
-cd INFOSYS722_BDAS/iteration4_BDAS
-python run_workflow.py --trials 20
+cd iteration4_BDAS
+python run_workflow.py
+# Or run selected preparation versions:
+python run_workflow.py --variants rfe20_standard rfe10_standard
 ```
 
-Use a Python interpreter with the dependencies in [requirements.txt](requirements.txt). An existing suitable environment can be reused; no installation is performed automatically. The author's local `.venv` link is machine-specific and is excluded from Git. Native Spark additionally requires the dependencies in [requirements-spark.txt](../PySpark/requirements-spark.txt) and Java.
+The main local notebook `iteration4_BDAS/run_workflow.ipynb` invokes the same native extension. `PySpark/run_spark_iterations_colab.ipynb` is the repository's dedicated Colab entrypoint. Java and dependencies in [PySpark/requirements-spark.txt](../PySpark/requirements-spark.txt) must be available for local Spark execution. The existing author environment has no local PySpark/Java; the extension has not been executed there.
 
-The committed configuration records exact package versions and an input-data signature. If the default saved run differs from the current configuration, the main workflow automatically chooses a stable directory under `results/holdout_runs/<configuration-id>/`. Identical configurations resume completed evaluations. An explicitly supplied incompatible directory is rejected with the differing fields listed. This prevents mixing local and Colab checkpoints.
+### Retained Python prototype
 
-```python
-from holdout_workflow import run
-metrics = run(trials=20)
-print(metrics.attrs['output_dir'])
-```
-
-Generate figures and tables for the corresponding results directory, then rebuild the report:
+Use an existing environment with [requirements.txt](requirements.txt):
 
 ```bash
-python scripts/build_holdout_report.py --results-dir results/holdout
+cd iteration4_BDAS
+python run_python_workflow.py --trials 20
+python holdout_workflow.py --variants rfe10_standard --output-dir results/holdout_rfe10
+```
+
+The original local `.venv` link is machine-specific and is excluded from Git. Python default runs separate incompatible package/data configurations automatically. The completed RFE10 run used the existing environment without package installation.
+
+### Rebuild report evidence
+
+```bash
+cd iteration4_BDAS
+python scripts/build_holdout_report.py
+python scripts/build_extension_report.py
+# After completing new native Spark runs:
+python scripts/build_extension_report.py --spark-results /path/to/completed/spark/run
 cd Report
 latexmk -pdf -interaction=nonstopmode main.tex
 ```
 
-For an automatically separated run, replace `results/holdout` with the printed results directory. LaTeX compilation requires a TeX distribution, latexmk and biber.
-
-### Run in Google Colab
-
-Open the relevant notebook using the links above. The native Spark notebook loads `../PySpark/spark_workflow.py` from a repository checkout, cloning this repository in Colab if needed. It installs only missing Python dependencies and checks Java. Google Drive mounting is optional. Results are saved under the printed `PySpark/results/spark_holdout/` folder; re-running its training cell retrains the native Spark models.
-
-For the main notebook, clone this repository in a Colab cell:
-
-```python
-!git clone https://github.com/QuyDuong106/INFOSYS722_BDAS.git /content/INFOSYS722_BDAS
-```
-
-Set `PROJECT_ROOT = Path('/content/INFOSYS722_BDAS/iteration4_BDAS')` in the notebook's setup cell. Use a runtime with the required packages, run the cells in order and save results before the session ends. The main five-family notebook does not mount Drive or install packages automatically. The Spark notebook offers optional Drive mounting and installs only missing Python packages.
+The Spark evidence importer requires a completed run. LaTeX compilation needs latexmk, biber and a TeX distribution. Both project-plan diagrams use two-day date labels and guide lines.
 
 ### Validation
 
 ```bash
+cd iteration4_BDAS
 python -m unittest discover -s tests -v
+# In a Spark/Java runtime:
+python -m unittest discover -s spark_tests -v
 ```
 
-Checks cover training/test separation, exact split sizes, five seeds, matching-config resume, automatic environment separation and rejection of explicit mismatched folders. All 150 committed pipelines reproduced their stored probabilities in the author's existing environment. See [VALIDATION.md](VALIDATION.md).
+The normal checks cover holdout separation, exact split counts, matching resumes and configuration separation. New native integration checks cover RFE width, unchanged category codes, model persistence and training-CV/holdout separation. They are skipped locally without PySpark, and are included before full execution in the Colab notebook. All 30 new Python pipelines reproduced stored probabilities, with ten selected fields verified separately for each stacking base.
 
-Only load the committed model pickles as trusted project artifacts, using the recorded compatible environment.
-
-## Repository layout
+## Layout
 
 ```text
 PySpark/
-  run_spark_workflow.ipynb    Saved native Spark execution notebook
-  spark_visualization_colab.ipynb  Saved exploratory figures
-  spark_workflow.py           Native Spark implementation
-  requirements-spark.txt      Spark dependency declaration
+  run_spark_iterations_colab.ipynb  Primary native Spark extension
+  run_spark_workflow.ipynb          Saved all-field Colab execution
+  spark_visualization_colab.ipynb   Saved exploratory figures
+  spark_iterations.py              Matched feature-selection iterations
+  spark_feature_selection.py       Persistable native CART/RFE estimator
+  spark_workflow.py                Native baseline and shared helpers
+  tests/                          Spark-runtime integration checks
 iteration4_BDAS/
-  run_workflow.ipynb          Main five-family notebook
-  run_workflow.py             Command-line entrypoint
-  holdout_workflow.py         Holdout benchmarks, resume and aggregation
-  optuna_holdout.py           Training-only tuning
-  modeling.py, utils.py       Estimators and preparation helpers
-  data/raw/                  Source dataset
-  results/holdout/            Completed main evidence and pipelines
-  scripts/                   Report table/figure generation
-  tests/                     Workflow checks
-  Report/                    LaTeX source, figures and main.pdf
+  run_workflow.ipynb, run_workflow.py   Primary Spark entrypoints
+  run_python_workflow.ipynb/.py        Retained Python entrypoints
+  holdout_workflow.py, optuna_holdout.py
+  data/raw/
+  results/holdout/, holdout_rfe10/, spark_colab_reference/
+  scripts/, tests/, spark_tests/
+  Report/                         Sources, figures and main.pdf
 ```
 
-Virtual environments, caches, generated ZIPs, retired iterations and temporary LaTeX build files are excluded. This repository contains Iteration 4; Research Paper work remains separate.
+Caches, virtual environments, archives and temporary LaTeX build files are excluded. Research Paper work remains separate.

@@ -1,0 +1,17 @@
+\subsection{Source Repository}
+The Iteration 4 source, report, evidence and native Spark notebooks are available in the public GitHub repository:
+\begin{center}
+\url{https://github.com/QuyDuong106/INFOSYS722_BDAS}
+\end{center}
+The repository is organised around CRISP-DM. Its \path{iteration4_BDAS} folder contains the report, original data and retained Python prototype; \path{PySpark} contains the native Spark implementation, saved executions, visualization notebook and new feature-selection extension.
+
+\subsection{Colab Entry Points}
+\begin{itemize}
+\item \href{https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/run_spark_iterations_colab.ipynb}{Native Spark CART20/RFE20/RFE10 extension}: the primary workflow for new controlled Spark preparation experiments. The local \path{iteration4_BDAS/run_workflow.ipynb} invokes this same extension.
+\item \href{https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/run_spark_workflow.ipynb}{Saved Spark holdout execution}: retains the author's measured all-field logistic, random-forest and GBT results.
+\item \href{https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/spark_visualization_colab.ipynb}{Saved Spark visualization}: supports CRISP-DM data understanding through Spark-computed summaries and plots.
+\item \path{iteration4_BDAS/run_python_workflow.ipynb}: retains the five-family Python/Optuna prototype separately from the primary Spark submission workflow.
+\end{itemize}
+
+\subsection{Evidence Provenance}
+The native baseline table is extracted from the author's saved Colab display in \path{PySpark/run_spark_workflow.ipynb}. The retained source commit and display precision are recorded in \path{results/spark_colab_reference/provenance.json}. The table contains fifteen measured model/seed evaluations, not fifteen independent cohorts. Its displayed values were rounded to six decimal places. New Spark extension outputs record runtime versions, code/data signatures, saved split membership, selected fields and CV search evidence. Scores are included in the report only when the corresponding native execution is complete.

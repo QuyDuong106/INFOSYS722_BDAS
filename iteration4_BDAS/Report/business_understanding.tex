@@ -76,7 +76,7 @@ Table~\ref{tab:iteration-plan} summarises the iteration running from 21 Septembe
 
 \begin{table}[htbp]
 \centering
-\caption{Iteration plan for Python development and evaluation, 21 September--16 October 2026.}
+\caption{Iteration plan for PySpark development and evaluation, 21 September--16 October 2026; date labels and vertical guides use two-day intervals.}
 \label{tab:iteration-plan}
 \begin{tabularx}{\textwidth}{p{2.7cm} X X}
 \toprule
@@ -88,14 +88,13 @@ Table~\ref{tab:iteration-plan} summarises the iteration running from 21 Septembe
 27 September--6 October & In parallel, apply the \emph{model-centric strategy}: compare logistic regression, random forest, XGBoost, LightGBM, and stacking; tune promising models without accessing the test set. & Tuned candidate models and a cross-validated comparison table. \\
 7--10 October & Evaluate alternative validation strategies using five-seed stratified holdout with training-only three-fold cross-validation; assess threshold choice, calibration, sensitivity, specificity, ROC--AUC, F1, and log loss. & Robustness analysis showing the effect of evaluation strategy and decision threshold. \\
 11--13 October & Conduct error analysis, subgroup checks, feature-importance analysis, and comparison of data-centric, model-centric, and combined strategies. & Error profiles, interpretation outputs, and a defensible preferred approach. \\
-14--16 October & Re-run the selected workflow, verify reproducibility, consolidate results and limitations, and finalise the report and recommendations. & Reproducible Python artefacts and final iteration report. \\
+14--16 October & Re-run the selected workflow, verify reproducibility, consolidate results and future work, and finalise the report and recommendations. & Reproducible Python artefacts and final iteration report. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \subsubsection{Development and data-mining plan}
-The current iteration is scheduled from 21 September to 16 October 2026. All
-development will be completed in Python. The work begins with a reproducible
+The current iteration is scheduled from 21 September to 16 October 2026. Development uses native PySpark for the submitted extension, with the earlier Python prototype retained for comparison. The work begins with a reproducible
 baseline and then separates improvement activities into two complementary
 strategies. The data-centric strategy improves the quality and representation
 of the input data through validation, transformation, feature engineering,
@@ -115,7 +114,7 @@ different evaluation setup.
 \resizebox{\textwidth}{!}{%
 \begin{ganttchart}[
     hgrid,
-    vgrid,
+    vgrid={draw=none,dotted},
     time slot format=isodate,
     title/.style={fill=gray!20},
     title label font=\bfseries\small,
@@ -132,8 +131,8 @@ different evaluation setup.
 % Timeline
 \gantttitle{September 2026}{10}
 \gantttitle{October 2026}{16} \\
-\gantttitlelist{21,...,30}{1}
-\gantttitlelist{1,...,16}{1} \\
+\gantttitlelist{21,23,...,29}{2}
+\gantttitlelist{1,3,...,15}{2} \\
 
 % Phase 1
 \ganttgroup{Phase 1: Problem and Data Validation}
@@ -153,10 +152,10 @@ different evaluation setup.
 \ganttgroup{Phase 3: Parallel Strategy Development}
     {2026-09-27}{2026-10-06} \\
 
-\ganttbar[bar/.append style={fill=teal!55}]{Data-centric: quality, features, and selection}
+\ganttbar[bar/.append style={fill=teal!55}]{Data-centric: standardization, CART/RFE, 20/10 fields}
     {2026-09-27}{2026-10-03} \\
 
-\ganttbar[bar/.append style={fill=orange!65}]{Model-centric: compare, tune, and stack}
+\ganttbar[bar/.append style={fill=orange!65}]{Model-centric: native Spark models and training CV}
     {2026-09-27}{2026-10-06} \\
 
 % Phase 4
@@ -185,8 +184,8 @@ different evaluation setup.
 
 \end{ganttchart}%
 }
-\caption{Python development and evaluation plan for the current gallstone
-prediction iteration, 21 September--16 October 2026.}
+\caption{Spark development and evaluation plan for the current gallstone
+prediction iteration, 21 September--16 October 2026; date labels and vertical guides use two-day intervals.}
 \label{fig:gantt-iteration}
 \end{figure}
 
@@ -252,7 +251,7 @@ Report writing will be carried out progressively throughout the current
 iteration rather than being postponed until the modelling work is complete.
 Early sections describing the problem, dataset, and methodology will be
 drafted while the corresponding analytical tasks are being completed.
-Results, discussion, limitations, and recommendations will then be added as
+Results, discussion, future work, and recommendations will then be added as
 model outputs become available. This approach allows the report to be updated continuously and reduces the risk of documentation being disconnected from the implemented analysis.
 
 Figure~\ref{fig:gantt-report-writing} presents the report-writing schedule for
@@ -263,7 +262,7 @@ Figure~\ref{fig:gantt-report-writing} presents the report-writing schedule for
 \resizebox{\textwidth}{!}{%
 \begin{ganttchart}[
     hgrid,
-    vgrid,
+    vgrid={draw=none,dotted},
     time slot format=isodate,
     title/.style={fill=gray!20},
     title label font=\bfseries\small,
@@ -280,8 +279,8 @@ Figure~\ref{fig:gantt-report-writing} presents the report-writing schedule for
 % Timeline
 \gantttitle{September 2026}{10}
 \gantttitle{October 2026}{16} \\
-\gantttitlelist{21,...,30}{1}
-\gantttitlelist{1,...,16}{1} \\
+\gantttitlelist{21,23,...,29}{2}
+\gantttitlelist{1,3,...,15}{2} \\
 
 % Planning
 \ganttgroup{Report Planning and Structure}
@@ -348,7 +347,7 @@ Figure~\ref{fig:gantt-report-writing} presents the report-writing schedule for
 \ganttbar{Discuss feature importance and clinical relevance}
     {2026-10-11}{2026-10-12} \\
 
-\ganttbar{Document limitations and risks}
+\ganttbar{Write future work and next iterations}
     {2026-10-13}{2026-10-13} \\
 
 % Finalisation
@@ -370,7 +369,7 @@ Figure~\ref{fig:gantt-report-writing} presents the report-writing schedule for
 \end{ganttchart}%
 }
 \caption{Day-to-day report-writing plan for the gallstone prediction project,
-21 September--16 October 2026.}
+21 September--16 October 2026; date labels and vertical guides use two-day intervals.}
 \label{fig:gantt-report-writing}
 \end{figure}
 

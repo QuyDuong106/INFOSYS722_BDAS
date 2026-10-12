@@ -1,8 +1,24 @@
-\path{iteration4_BDAS/.venv} links to the existing \path{../Experimental/.venv}; no dependencies were reinstalled. From the Iteration 4 directory run:
+\subsection{Primary Spark Workflow}
+Open \path{run_workflow.ipynb} in Google Colab, or use the repository's \path{PySpark/run_spark_iterations_colab.ipynb}. Run the setup and integration-check cells before the model cells. Setup reuses existing runtime packages, installs only missing Spark dependencies in Colab, checks Java, and loads the current repository layout. It does not require a ZIP or Google Drive mounting.
+
+The primary extension compares all-field standardization, CART20, RFE20 and RFE10 with Spark logistic regression, random forest and GBT. The same five holdout seeds are used for every version. Feature selection, imputation and scaling are fitted within the three training-only CV folds. Identical configurations resume completed model checkpoints; changed code/data/runtime settings select a separate default output directory.
+
+In a Spark-capable local runtime, run:
 \begin{verbatim}
-.venv/bin/python run_workflow.py --trials 20
+python spark_iterations.py \
+  --data data/raw/dataset_gallstone
+\end{verbatim}
+Within the GitHub checkout, use \path{PySpark/spark_iterations.py} and the raw dataset under \path{iteration4_BDAS/data/raw/}. Full extension output includes Spark models, predictions, selected fields, CV grids/scores and JSON/CSV metrics. New native results must be completed before they are reported as measured evidence.
+
+\subsection{Retained Python Prototype and Report Build}
+The original five-family workflow remains in \path{run_python_workflow.ipynb} and \path{run_python_workflow.py}. The existing local \path{.venv} links to \path{../Experimental/.venv}; no packages were reinstalled for the Python feature-count iteration. To reproduce the additional fixed-model RFE10 comparison:
+\begin{verbatim}
+.venv/bin/python holdout_workflow.py \
+  --variants rfe10_standard \
+  --output-dir results/holdout_rfe10
 .venv/bin/python scripts/build_holdout_report.py
+.venv/bin/python scripts/build_extension_report.py
 cd Report
 latexmk -pdf -interaction=nonstopmode main.tex
 \end{verbatim}
-The main notebook \path{run_workflow.ipynb} invokes the same workflow. Results are saved under \path{results/holdout/seed_<seed>/variant/benchmark_or_tuned/model/}. Identical configurations resume completed model evaluations. When the default saved configuration differs, the workflow automatically chooses a separate configuration-specific directory under \path{results/holdout_runs/}; identical reruns resume there. Explicit incompatible directories are rejected with the changed fields listed. The notebook uses \texttt{metrics.attrs['output\_dir']} to locate summaries and generate figures for its own run. The saved configuration records package versions and data signature. The shared environment link is local and must be replaced by an available environment on another machine; the notebook checks dependencies without installing packages.
+After a complete new native Spark run, pass its output directory to \path{scripts/build_extension_report.py} using \texttt{--spark-results}. The generator validates completion before inserting native feature-selection scores. Save Colab outputs before ending the runtime and preserve the exact configuration alongside the resulting report.

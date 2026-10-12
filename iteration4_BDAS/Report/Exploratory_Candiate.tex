@@ -1,4 +1,17 @@
-\subsection{Repeated Holdout Execution}
+\subsection{Native Spark Execution in Google Colab}
+The submitted workflow now uses PySpark for loading, preparation, model fitting, training-only cross-validation, predictions and metrics. The author's saved Colab execution trained native Spark logistic regression, random forest and gradient-boosted trees on five stratified 70/30 holdouts (seeds 42, 7, 21, 84 and 123). Each split used 223 training and 96 test records. All 38 source fields were retained; continuous fields were standardized and original ordinal codes were preserved. Three-fold Spark CrossValidator operated on training records only.
+
+\input{generated/spark_execution_evidence.tex}
+
+The saved execution demonstrates actual use of Spark and Colab, while the GitHub repository supplies the source and saved notebook evidence. It does not establish that the newer CART20/RFE20/RFE10 extension has already run. Its pipeline performs selection within native Spark fits and records the corresponding tuning traces when executed. Spark GBT is a separate implementation from XGBoost and LightGBM.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.95\textwidth]{figures/modeling/spark_average_cm.pdf}
+\caption{Mean native Spark test confusion counts over the author's five saved Colab holdouts. Counts are averaged rather than pooled into an independent new cohort.}
+\end{figure}
+
+\subsection{Retained Python Prototype Execution}
 Five seeds (42, 7, 21, 84, 123) each produce a 223-record training partition and a 96-record test partition. Four preparation variants are benchmarked with fixed settings for five predictive families and the training-prior dummy. The predeclared RFE/standardization variant additionally receives training-only Optuna searches for all five predictive families. The dummy has no tunable hyperparameters. No test record enters an inner CV fit or parameter search.
 
 \input{generated/holdout_results.tex}

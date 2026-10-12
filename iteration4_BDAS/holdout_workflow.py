@@ -29,10 +29,15 @@ def resolve_output_dir(config, output_dir=None):
    raise ValueError(f"Configuration collision at {out}; choose a fresh explicit output_dir")
  return out
 
-def run(trials=20,seeds=DEFAULT_SEEDS,models=WORKFLOW_MODELS,output_dir=None):
+def run(trials=20,seeds=DEFAULT_SEEDS,models=WORKFLOW_MODELS,output_dir=None,variants=None):
  if len(seeds)!=5 or len(set(seeds))!=5 or trials<1:raise ValueError('Require five distinct seeds and positive trials')
+ all_variants={**VARIANTS,'rfe10_standard':('rfe','standard')}
+ chosen=VARIANTS if variants is None else {v:all_variants[v] for v in variants}
+ if not chosen:raise ValueError('Choose at least one preparation variant')
  X,y=workflow_data()
  config=dict(version=1,signature=frame_signature(X,y),seeds=list(seeds),models=list(models),trials=trials,test_fraction=.3,inner_folds=3,top_k=20,threshold=.5,tuned_variant='rfe_standard',packages={p:version(p) for p in ['optuna','scikit-learn','xgboost','lightgbm','numpy','pandas']})
+ if variants is not None and list(variants)==['rfe10_standard']:config['top_k']=10
+ if variants is not None:config['variants']={v:dict(selection=pair[0],scaling=pair[1],top_k=10 if v=='rfe10_standard' else 20) for v,pair in chosen.items()}
  out=resolve_output_dir(config,output_dir);out.mkdir(parents=True,exist_ok=True)
  print(f'Results directory: {out}',flush=True)
  cp=out/'run_config.json'
@@ -42,7 +47,8 @@ def run(trials=20,seeds=DEFAULT_SEEDS,models=WORKFLOW_MODELS,output_dir=None):
   xt,yt=X.iloc[train],y.iloc[train];xv,yv=X.iloc[test],y.iloc[test]
   sd=out/f'seed_{seed}';sd.mkdir(exist_ok=True)
   pd.concat([pd.DataFrame({'source_row':X.iloc[pos].index,'partition':label}) for label,pos in [('train',train),('test',test)]]).to_csv(sd/'split_membership.csv',index=False)
-  for variant,(selection,scaling) in VARIANTS.items():
+  for variant,(selection,scaling) in chosen.items():
+   top_k=10 if variant=='rfe10_standard' else 20
    for mode in (('benchmark','tuned') if variant=='rfe_standard' else ('benchmark',)):
     for name in models:
      dest=sd/variant/mode/name;dest.mkdir(parents=True,exist_ok=True);checkpoint=dest/'metrics.json'
@@ -51,10 +57,10 @@ def run(trials=20,seeds=DEFAULT_SEEDS,models=WORKFLOW_MODELS,output_dir=None):
       print(f'Seed {seed}: {variant} {mode} {name}',flush=True);started=perf_counter()
       with threadpool_limits(limits=1):
        if mode=='tuned':
-        fitted,params,score,trial_table=tune_training_fold(name,xt,yt,seed=seed,trials=trials,selection=selection,scaling=scaling)
+        fitted,params,score,trial_table=tune_training_fold(name,xt,yt,seed=seed,trials=trials,selection=selection,scaling=scaling,top_k=top_k)
         trial_table.to_csv(dest/'optuna_trials.csv',index=False)
        else:
-        fitted=DummyClassifier(strategy='prior') if name=='dummy_prior' else make_evaluation_model(name,xt,seed,selection,20,scaling=scaling)
+        fitted=DummyClassifier(strategy='prior') if name=='dummy_prior' else make_evaluation_model(name,xt,seed,selection,top_k,scaling=scaling)
         score=float(cross_val_score(fitted,xt,yt,cv=StratifiedKFold(3,shuffle=True,random_state=seed),scoring='roc_auc',n_jobs=1).mean());params={};fitted.fit(xt,yt)
        probability=disease_probability(fitted,xv)
       row=metric_row(seed,name,mode,yv,probability,perf_counter()-started);row.update(variant=variant,inner_cv_auc=score,auc_benchmark_met=row['roc_auc']>=.8,sensitivity_benchmark_met=row['recall']>=.8,fnr=1-row['recall'])
@@ -76,4 +82,4 @@ def run(trials=20,seeds=DEFAULT_SEEDS,models=WORKFLOW_MODELS,output_dir=None):
  metrics.attrs['output_dir']=str(out.resolve())
  return metrics
 if __name__=='__main__':
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('--trials',type=int,default=20);p.add_argument('--output-dir',type=Path);p.add_argument('--seeds',type=int,nargs=5,default=list(DEFAULT_SEEDS));p.add_argument('--models',nargs='+',choices=WORKFLOW_MODELS,default=list(WORKFLOW_MODELS));run(**vars(p.parse_args()))
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--trials',type=int,default=20);p.add_argument('--output-dir',type=Path);p.add_argument('--seeds',type=int,nargs=5,default=list(DEFAULT_SEEDS));p.add_argument('--models',nargs='+',choices=WORKFLOW_MODELS,default=list(WORKFLOW_MODELS));p.add_argument('--variants',nargs='+',choices=[*VARIANTS,'rfe10_standard']);run(**vars(p.parse_args()))

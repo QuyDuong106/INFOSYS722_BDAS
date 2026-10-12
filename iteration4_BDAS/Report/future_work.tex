@@ -1,0 +1,7 @@
+Future work will complete and archive the native Spark CART20, RFE20 and RFE10 experiments through the same five-seed holdout protocol. Each extension should retain the selected original fields, training-only CV scores, fitted Spark pipelines and test predictions. The completed Python feature-count comparison is useful prototype evidence, but native Spark comparisons require their own measured output rather than reusing Python scores.
+
+The next model-development cycle will broaden the documented training-only searches, compare the stability and computational cost of 10-field and 20-field subsets, and investigate Spark-compatible boosting and ensemble implementations. Added complexity should be supported by training-CV evidence, with the held-out test sets reserved for evaluation.
+
+A subsequent clinical-validation cycle will define probability calibration and sensitivity-oriented threshold procedures inside training, examine clinically meaningful subgroup behaviour, and evaluate the locked workflow on an external cohort. The overlapping holdout splits provide internal partition-sensitivity evidence rather than independent clinical replications.
+
+Reproducibility work will retain exact runtime versions, immutable Git commit references, raw-data/code signatures and complete tuning traces for each Colab run. The GitHub repository and saved Colab notebooks provide the current distribution mechanism; future deployment should follow external validation and appropriate clinical review.
