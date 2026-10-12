@@ -13,6 +13,10 @@ A reproducible gallstone-prediction project organised using **CRISP-DM (Cross-In
 
 The two workflows are separate implementations. The committed report metrics come from the main five-family Python workflow. Native Spark training has not been executed for the newly created standalone notebook; its cells and notebook structure have been validated.
 
+## PySpark data visualization
+
+[Open the Spark visualization notebook in Colab](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/spark_visualization_colab.ipynb). The [PySpark folder](PySpark/README.md) provides Spark-based exploratory summaries and seven visualization figures for CRISP-DM data understanding, without pandas conversion.
+
 ## 1. Business understanding
 
 Investigate whether routinely available demographic, clinical, laboratory and body-composition measurements can support early gallstone-risk assessment. This is an academic proof of concept for prioritising further clinical assessment. It is not a clinical deployment or a replacement for diagnostic imaging.
