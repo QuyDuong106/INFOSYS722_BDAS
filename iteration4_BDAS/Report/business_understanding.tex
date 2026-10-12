@@ -1,0 +1,377 @@
+\subsection{Clinical background and motivation}
+
+Gallstone disease (cholelithiasis) is a common hepatobiliary disorder in which solid deposits form within the gallbladder or biliary tract. Although many gallstones remain clinically silent, obstruction of the cystic or common bile duct can lead to biliary colic and complications such as acute cholecystitis, obstructive jaundice, cholangitis, and gallstone pancreatitis \cite{lammert2016gallstones,fujita2023guidelines}. A recent systematic review and meta-analysis estimated that approximately 6\% of the global population has gallstones, with prevalence varying substantially by sex and geographical region \cite{wang2024global}. The scale of the condition and the possibility of clinically important complications make the identification of individuals at increased risk a relevant preventive and diagnostic-support problem.
+
+Gallstone formation is multifactorial rather than the result of a single abnormal measurement. Established or commonly reported associations include age, sex, obesity and body-fat distribution, metabolic abnormalities, dyslipidaemia, and diabetes \cite{lammert2016gallstones}. These relationships are relevant to the present dataset because its predictors combine demographic information, comorbidities, body-composition measurements, and routine laboratory markers. This creates an opportunity to investigate whether the joint pattern of routinely obtainable variables contains sufficient information to distinguish patients with and without gallstones.
+
+In current clinical practice, abdominal ultrasonography remains a principal first-line imaging method for suspected gallstone disease, together with appropriate laboratory assessment \cite{easl2016guidelines,nice2014gallstone,fujita2023guidelines,gutt2020treatment}. Therefore, the purpose of the proposed machine learning system is \emph{not} to replace ultrasound or provide an autonomous diagnosis. Instead, the project treats prediction as a risk-stratification and decision-support problem: a model could estimate the probability of gallstone disease from non-imaging clinical information and thereby identify individuals who may warrant closer clinical assessment or confirmatory imaging.
+
+This direction is supported by recent work applying machine learning to clinical and metabolic information. Salem et al.\ combined metabolomic and clinical predictors and demonstrated that nonlinear models can capture patterns associated with gallstone status \cite{salem2023ml}. More directly, Esen et al.\ introduced the dataset used in this project and reported that models based on bioimpedance and laboratory variables could distinguish gallstone cases from controls, with their strongest models reaching approximately 85\% accuracy and an area under the receiver-operating-characteristic curve (ROC--AUC) of about 0.85 \cite{esen2024early}. These results provide a useful benchmark, but they do not remove the need for careful validation, because the available sample is small and originates from a single clinical setting.
+
+\subsection{Business and situation objectives}
+\label{subsec:business-objectives}
+
+The practical objective of this project is to develop and evaluate an interpretable early-risk prediction approach for gallstone disease using information that may already be available from routine clinical assessment, blood testing, and bioimpedance measurement. In a realistic healthcare workflow, the intended output would be a \emph{risk estimate} rather than a definitive diagnostic label. The model should help prioritise patients for further assessment while maintaining sufficient transparency for its predictions to be examined by a clinician.
+
+Accordingly, the business/situation objectives are:
+
+\begin{enumerate}
+    \item Determine whether demographic, comorbidity, laboratory, and body-composition variables can provide useful early discrimination between patients with and without gallstones;
+    \item Minimise clinically undesirable false-negative predictions, because a model that frequently classifies gallstone cases as low risk would have limited screening value;
+    \item Identify the variables that contribute most strongly to predictions so that the resulting model remains interpretable and clinically reviewable; and
+    \item Produce a reproducible proof-of-concept that can justify, but not substitute for, subsequent external clinical validation.
+\end{enumerate}
+
+For this iteration, business success is defined as evidence that the dataset can support a stable and interpretable risk-stratification model rather than evidence that the model is ready for clinical deployment. The analytical success criteria are therefore set as: (i) ROC--AUC of at least 0.80 under a validation procedure that keeps training and evaluation data separate; (ii) sensitivity/recall of at least 0.80 for the gallstone class at the selected decision threshold; (iii) performance superior to simple baselines such as majority-class prediction and standard logistic regression where possible; and (iv) reporting of calibration, confusion-matrix outcomes, and important predictors in addition to overall accuracy. These thresholds are project benchmarks chosen to make the data-mining goal measurable; they are not clinical guideline thresholds.
+
+\subsection{Situation assessment}
+\label{subsec:situation-assessment}
+
+\subsubsection{Available resources and data}
+
+The UCI Gallstone dataset originates from a prospective descriptive study conducted at the Internal Medicine Outpatient Clinic of Ankara VM Medical Park Hospital between June 2022 and June 2023 \cite{esen2024early,uci2025gallstone}. The source study initially considered 454 participants and excluded individuals who had previously undergone gallbladder surgery, leaving 319 participants for analysis: 161 with gallstones and 158 controls \cite{esen2024early}. The near-balanced outcome distribution is advantageous for a binary classification exercise because the model is not forced to learn from a severely under-represented positive class.
+
+The dataset contains demographic variables, comorbidities, anthropometric measurements, bioimpedance measurements, hepatic-fat information, and routine laboratory results. Examples include age, sex, body mass index (BMI), diabetes, hyperlipidaemia, total body water, extracellular and intracellular water, body-fat and lean-mass measures, visceral fat measures, glucose, lipid markers, liver enzymes, creatinine, glomerular filtration rate, C-reactive protein (CRP), haemoglobin, and vitamin D \cite{esen2024early,uci2025gallstone}. The UCI repository describes the released data as having no missing values \cite{uci2025gallstone}; however, this must still be confirmed programmatically before modelling rather than assumed from documentation alone.
+
+The dataset is computationally small and can be analysed on ordinary hardware. All development in this iteration will use Python, with reproducible scripts and notebooks used to record data validation, preprocessing, feature engineering, model fitting, and evaluation. The principal libraries are pandas and NumPy for data handling, scikit-learn for preprocessing, validation, and baseline models, and XGBoost and LightGBM for boosted-tree experiments.
+
+\subsubsection{Requirements and assumptions}
+
+Several requirements follow from the medical context. First, all predictor transformations must be fitted using training data only so that information from the evaluation set cannot leak into model development. Second, model performance must be reported with class-sensitive metrics---particularly sensitivity, specificity, precision, F1 score, ROC--AUC, and the confusion matrix---rather than accuracy alone. Third, model interpretation is required because a high-performing but opaque model would be difficult to justify as clinical decision support. Finally, the analysis should distinguish prediction from causal inference: an important feature may improve classification without being a causal determinant of gallstone formation.
+
+A critical data-validation requirement is to verify the target encoding directly from the supplied dataset before analysis. The published study describes one numerical coding for gallstone presence, whereas the UCI repository documentation presents the class labels differently \cite{esen2024early,uci2025gallstone}. Similarly, repository metadata and the study description should be reconciled for the final number of observations. These discrepancies do not prevent modelling, but failure to resolve them could invert the target labels or create incorrect performance interpretation.
+
+\subsubsection{Constraints, risks, and contingencies}
+
+The principal constraint is sample size. With only approximately 319 participants and a relatively large number of candidate predictors, flexible models can overfit the training data. This risk will be reduced through stratified resampling, cross-validation, regularisation or restricted model complexity, and comparison with simpler baselines. Hyperparameter tuning and feature selection must occur inside the training/resampling process rather than on the full dataset.
+
+A second constraint is external validity. The records come from a single hospital population in Ankara, and the observed relationships may not transfer directly to other countries, ethnic groups, age structures, or healthcare settings. Consequently, even strong internal validation results should be described as proof-of-concept evidence. External validation on an independent cohort would be required before clinical use.
+
+A third risk concerns measurement availability. Some variables, particularly detailed bioimpedance measurements, may not be collected in every routine clinical setting. To address this, the project should compare a full-feature model with a reduced model based on more routinely available demographic and laboratory variables. If predictive performance remains similar, the reduced model may provide greater practical value.
+
+Other risks include correlated body-composition variables, unstable feature importance, hidden coding errors, and optimistic results caused by repeated experimentation on the same test data. The contingency plan is to preserve a clear evaluation protocol, report uncertainty across resamples, investigate highly correlated variables, and avoid claiming that a small improvement in a single metric represents clinically meaningful superiority.
+
+\subsection{Data-mining goals}
+\label{subsec:data-mining-goals}
+
+The data-mining task is a supervised binary-classification problem in which gallstone status is the target variable. The immediate technical goals are to:
+
+\begin{enumerate}
+    \item Audit variable types, ranges, coding, duplicates, and missing values;
+    \item Explore relationships between gallstone status and demographic, metabolic, laboratory, and body-composition predictors;
+    \item Establish interpretable baselines using logistic regression and a simple tree-based model;
+    \item Compare a limited set of nonlinear classifiers such as random forest and gradient boosting using consistent resampling;
+    \item Tune decision thresholds with particular attention to sensitivity and false-negative errors;
+    \item Assess probability calibration in addition to discrimination;
+    \item Evaluate model behaviour across clinically relevant subgroups, especially sex and age groups where sample size permits; and
+    \item Use interpretable feature-attribution or model-specific importance methods to identify variables that consistently contribute to predictions.
+\end{enumerate}
+
+These goals align directly with the business objective: the model is useful only if it can identify higher-risk individuals with acceptable sensitivity, provide a meaningful probability estimate, and explain the factors contributing to that estimate. The strongest model will therefore not automatically be the model with the highest raw accuracy; model selection will consider discrimination, sensitivity, calibration, stability, and interpretability together.
+
+\subsection{Project plan for the current iteration}
+\label{subsec:project-plan}
+
+Table~\ref{tab:iteration-plan} summarises the iteration running from 21 September to 16 October 2026. Development is organised around a common Python evaluation framework so that the baseline, data-centric, and model-centric strategies can be compared fairly using the same data partitions and metrics.
+
+\begin{table}[htbp]
+\centering
+\caption{Iteration plan for Python development and evaluation, 21 September--16 October 2026.}
+\label{tab:iteration-plan}
+\begin{tabularx}{\textwidth}{p{2.7cm} X X}
+\toprule
+\textbf{Dates} & \textbf{Main activities} & \textbf{Expected output} \\
+\midrule
+21--23 September & Confirm the business objective and success criteria; audit target coding, variable types, missing values, duplicates, ranges, and provenance in Python. & Validated problem statement, data dictionary, and data-quality log. \\
+24--26 September & Complete exploratory analysis and implement a leakage-safe Python pipeline with fixed stratified 70/30 partitions and repeated seeds; establish logistic-regression and tree baselines. & Reproducible baseline workflow, saved split membership, and benchmark metrics. \\
+27 September--3 October & Apply the \emph{data-centric strategy}: correct data-quality issues, assess transformations and outliers, engineer clinically meaningful features, compare full and reduced feature sets, and perform feature selection within cross-validation. & Audited feature sets and evidence of whether data improvements increase validation performance and stability. \\
+27 September--6 October & In parallel, apply the \emph{model-centric strategy}: compare logistic regression, random forest, XGBoost, LightGBM, and stacking; tune promising models without accessing the test set. & Tuned candidate models and a cross-validated comparison table. \\
+7--10 October & Evaluate alternative validation strategies using five-seed stratified holdout with training-only three-fold cross-validation; assess threshold choice, calibration, sensitivity, specificity, ROC--AUC, F1, and log loss. & Robustness analysis showing the effect of evaluation strategy and decision threshold. \\
+11--13 October & Conduct error analysis, subgroup checks, feature-importance analysis, and comparison of data-centric, model-centric, and combined strategies. & Error profiles, interpretation outputs, and a defensible preferred approach. \\
+14--16 October & Re-run the selected workflow, verify reproducibility, consolidate results and limitations, and finalise the report and recommendations. & Reproducible Python artefacts and final iteration report. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Development and data-mining plan}
+The current iteration is scheduled from 21 September to 16 October 2026. All
+development will be completed in Python. The work begins with a reproducible
+baseline and then separates improvement activities into two complementary
+strategies. The data-centric strategy improves the quality and representation
+of the input data through validation, transformation, feature engineering,
+feature selection, and reduced-feature experiments. The model-centric strategy
+holds the prepared data and evaluation rules constant while comparing model
+families, hyperparameters, ensembles, calibration, and classification
+thresholds. A final combined strategy uses only improvements supported by
+validation evidence.
+
+Figure~\ref{fig:gantt-iteration} presents the project timeline. The same saved
+data partitions and metrics will be used across strategies to ensure that any
+observed improvement is attributable to the tested change rather than to a
+different evaluation setup.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{ganttchart}[
+    hgrid,
+    vgrid,
+    time slot format=isodate,
+    title/.style={fill=gray!20},
+    title label font=\bfseries\small,
+    bar label font=\small,
+    group label font=\bfseries\small,
+    bar/.style={fill=blue!45},
+    group/.style={fill=blue!70},
+    milestone/.style={fill=red},
+    x unit=0.36cm,
+    y unit chart=0.55cm,
+    y unit title=0.55cm
+]{2026-09-21}{2026-10-16}
+
+% Timeline
+\gantttitle{September 2026}{10}
+\gantttitle{October 2026}{16} \\
+\gantttitlelist{21,...,30}{1}
+\gantttitlelist{1,...,16}{1} \\
+
+% Phase 1
+\ganttgroup{Phase 1: Problem and Data Validation}
+    {2026-09-21}{2026-09-23} \\
+
+\ganttbar{Validate objective, target, variables, and provenance}
+    {2026-09-21}{2026-09-23} \\
+
+% Phase 2
+\ganttgroup{Phase 2: Python Baseline and Evaluation Design}
+    {2026-09-24}{2026-09-27} \\
+
+\ganttbar{EDA, saved splits, pipelines, and baselines}
+    {2026-09-24}{2026-09-27} \\
+
+% Phase 3
+\ganttgroup{Phase 3: Parallel Strategy Development}
+    {2026-09-27}{2026-10-06} \\
+
+\ganttbar[bar/.append style={fill=teal!55}]{Data-centric: quality, features, and selection}
+    {2026-09-27}{2026-10-03} \\
+
+\ganttbar[bar/.append style={fill=orange!65}]{Model-centric: compare, tune, and stack}
+    {2026-09-27}{2026-10-06} \\
+
+% Phase 4
+\ganttgroup{Phase 4: Strategy Evaluation}
+    {2026-10-06}{2026-10-10} \\
+
+\ganttbar{Five-seed holdout, training CV and metrics}
+    {2026-10-06}{2026-10-10} \\
+
+% Phase 5
+\ganttgroup{Phase 5: Error Analysis and Strategy Selection}
+    {2026-10-10}{2026-10-13} \\
+
+\ganttbar{Errors, subgroups, interpretation, and comparison}
+    {2026-10-10}{2026-10-13} \\
+
+% Phase 6
+\ganttgroup{Phase 6: Reproducibility and Reporting}
+    {2026-10-14}{2026-10-16} \\
+
+\ganttbar{Re-run workflow and finalise report}
+    {2026-10-14}{2026-10-16} \\
+
+\ganttmilestone{Current iteration completed}
+    {2026-10-16}
+
+\end{ganttchart}%
+}
+\caption{Python development and evaluation plan for the current gallstone
+prediction iteration, 21 September--16 October 2026.}
+\label{fig:gantt-iteration}
+\end{figure}
+
+The baseline strategy provides the reference result against which subsequent
+changes are assessed. In the data-centric stage, models are deliberately kept
+stable while changes to data quality, transformations, engineered variables,
+and feature subsets are evaluated. In the model-centric stage, the selected
+data representation is held stable while algorithms and hyperparameters are
+varied. Preprocessing and feature selection remain inside each resampling fold
+to prevent leakage. Repeated holdout evaluation measures variation across
+partitions. Three-fold cross-validation within each training partition supplies tuning and algorithm-selection evidence. The preferred approach will be
+selected using sensitivity, specificity, ROC--AUC, F1, calibration, stability,
+interpretability, and implementation complexity rather than accuracy alone.
+
+Figure~\ref{fig:python-project-pipeline} clarifies the experimental pipeline.
+The untouched test partition is used only after the data-centric and
+model-centric choices have been made from training-only cross-validation evidence.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    node distance=7mm and 10mm,
+    stage/.style={draw, rounded corners, align=center, minimum height=9mm,
+                  text width=3.1cm, fill=blue!10},
+    data/.style={stage, fill=teal!18},
+    model/.style={stage, fill=orange!20},
+    decision/.style={stage, fill=violet!16},
+    output/.style={stage, fill=green!18},
+    arrow/.style={->, thick, >=stealth}
+]
+\node[stage] (audit) {Business objective and\\Python data audit};
+\node[stage, right=of audit] (split) {Saved stratified splits\\and leakage-safe baseline};
+\node[data, above right=8mm and 12mm of split] (datacentric)
+    {Data-centric experiments\\quality, transformations,\\features and selection};
+\node[model, below right=8mm and 12mm of split] (modelcentric)
+    {Model-centric experiments\\algorithms, tuning,\\calibration and stacking};
+\node[decision, right=58mm of split] (compare)
+    {Training CV comparison\\same splits and metrics};
+\node[decision, right=of compare] (robust)
+    {Robustness checks\\five-seed holdout,\\errors and subgroups};
+\node[output, right=of robust] (final)
+    {Locked test evaluation\\preferred strategy and\\reproducible report};
+
+\draw[arrow] (audit) -- (split);
+\draw[arrow] (split) -- (datacentric);
+\draw[arrow] (split) -- (modelcentric);
+\draw[arrow] (datacentric.east) -| (compare.north);
+\draw[arrow] (modelcentric.east) -| (compare.south);
+\draw[arrow] (compare) -- (robust);
+\draw[arrow] (robust) -- (final);
+\end{tikzpicture}
+}
+\caption{Python project pipeline for comparing data-centric, model-centric,
+and combined gallstone-prediction strategies.}
+\label{fig:python-project-pipeline}
+\end{figure}
+
+\subsubsection{Report writing plan}
+\label{subsec:report-writing-plan}
+
+Report writing will be carried out progressively throughout the current
+iteration rather than being postponed until the modelling work is complete.
+Early sections describing the problem, dataset, and methodology will be
+drafted while the corresponding analytical tasks are being completed.
+Results, discussion, limitations, and recommendations will then be added as
+model outputs become available. This approach allows the report to be updated continuously and reduces the risk of documentation being disconnected from the implemented analysis.
+
+Figure~\ref{fig:gantt-report-writing} presents the report-writing schedule for
+21 September--16 October 2026.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{ganttchart}[
+    hgrid,
+    vgrid,
+    time slot format=isodate,
+    title/.style={fill=gray!20},
+    title label font=\bfseries\small,
+    bar label font=\small,
+    group label font=\bfseries\small,
+    bar/.style={fill=green!45},
+    group/.style={fill=green!70},
+    milestone/.style={fill=red},
+    x unit=0.36cm,
+    y unit chart=0.55cm,
+    y unit title=0.55cm
+]{2026-09-21}{2026-10-16}
+
+% Timeline
+\gantttitle{September 2026}{10}
+\gantttitle{October 2026}{16} \\
+\gantttitlelist{21,...,30}{1}
+\gantttitlelist{1,...,16}{1} \\
+
+% Planning
+\ganttgroup{Report Planning and Structure}
+    {2026-09-21}{2026-09-23} \\
+
+\ganttbar{Define report structure and section outline}
+    {2026-09-21}{2026-09-22} \\
+
+\ganttbar{Organise references and supporting materials}
+    {2026-09-22}{2026-09-23} \\
+
+% Introduction
+\ganttgroup{Introduction and Problem Definition}
+    {2026-09-23}{2026-09-27} \\
+
+\ganttbar{Draft background and motivation}
+    {2026-09-23}{2026-09-24} \\
+
+\ganttbar{Write problem statement and objectives}
+    {2026-09-25}{2026-09-26} \\
+
+\ganttbar{Write project scope and success criteria}
+    {2026-09-27}{2026-09-27} \\
+
+% Data and Methodology
+\ganttgroup{Data and Methodology}
+    {2026-09-27}{2026-10-03} \\
+
+\ganttbar{Document dataset and variables}
+    {2026-09-27}{2026-09-28} \\
+
+\ganttbar{Write data quality and EDA section}
+    {2026-09-29}{2026-09-30} \\
+
+\ganttbar{Document preprocessing and evaluation design}
+    {2026-10-01}{2026-10-01} \\
+
+\ganttbar{Describe baseline and candidate models}
+    {2026-10-02}{2026-10-03} \\
+
+% Results
+\ganttgroup{Results}
+    {2026-10-04}{2026-10-10} \\
+
+\ganttbar{Prepare model performance tables}
+    {2026-10-04}{2026-10-06} \\
+
+\ganttbar{Prepare figures and visualisations}
+    {2026-10-06}{2026-10-07} \\
+
+\ganttbar{Write model comparison results}
+    {2026-10-08}{2026-10-09} \\
+
+\ganttbar{Write threshold and calibration results}
+    {2026-10-10}{2026-10-10} \\
+
+% Discussion
+\ganttgroup{Discussion and Interpretation}
+    {2026-10-10}{2026-10-13} \\
+
+\ganttbar{Interpret predictive performance}
+    {2026-10-10}{2026-10-10} \\
+
+\ganttbar{Discuss feature importance and clinical relevance}
+    {2026-10-11}{2026-10-12} \\
+
+\ganttbar{Document limitations and risks}
+    {2026-10-13}{2026-10-13} \\
+
+% Finalisation
+\ganttgroup{Finalisation}
+    {2026-10-14}{2026-10-16} \\
+
+\ganttbar{Write conclusion and recommendations}
+    {2026-10-14}{2026-10-14} \\
+
+\ganttbar{Review consistency, citations, tables, and figures}
+    {2026-10-14}{2026-10-15} \\
+
+\ganttbar{Proofread and finalise report}
+    {2026-10-16}{2026-10-16} \\
+
+\ganttmilestone{Final report completed}
+    {2026-10-16}
+
+\end{ganttchart}%
+}
+\caption{Day-to-day report-writing plan for the gallstone prediction project,
+21 September--16 October 2026.}
+\label{fig:gantt-report-writing}
+\end{figure}
+
+The completion criterion for this iteration is therefore a transparent comparison of feasible predictive models and a defensible conclusion about whether this dataset supports early gallstone-risk stratification. Clinical deployment, treatment decisions, and replacement of diagnostic imaging are explicitly outside the scope of the present iteration.

@@ -1,0 +1,2 @@
+# Native Colab Spark workflow (Java 17 recommended)
+pyspark>=3.5.3,<4.0

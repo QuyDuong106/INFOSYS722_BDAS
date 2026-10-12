@@ -1,0 +1,17 @@
+{
+  "parameters": {
+    "xgboost__model__n_estimators": 140,
+    "xgboost__model__learning_rate": 0.06088171421393977,
+    "xgboost__model__colsample_bytree": 0.7046924834784125,
+    "xgboost__model__reg_lambda": 3.669251570087616,
+    "xgboost__model__max_depth": 4,
+    "xgboost__model__subsample": 0.8351880049336537,
+    "lightgbm__model__n_estimators": 140,
+    "lightgbm__model__learning_rate": 0.08116047549088498,
+    "lightgbm__model__colsample_bytree": 0.6401313952591597,
+    "lightgbm__model__reg_lambda": 0.1487701490185292,
+    "lightgbm__model__num_leaves": 13,
+    "lightgbm__model__min_child_samples": 14
+  },
+  "inner_cv_auc": 0.8766501209602205
+}

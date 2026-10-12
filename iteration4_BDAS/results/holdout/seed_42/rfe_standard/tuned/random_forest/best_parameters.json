@@ -1,0 +1,9 @@
+{
+  "parameters": {
+    "model__n_estimators": 140,
+    "model__max_depth": 2,
+    "model__min_samples_leaf": 8,
+    "model__max_features": 0.5
+  },
+  "inner_cv_auc": 0.8594068819886743
+}

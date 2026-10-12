@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+Report/*.aux
+Report/*.log
+Report/*.blg
+Report/*.bcf
+Report/*.fls
+Report/*.fdb_latexmk
+Report/*.out
+Report/*.toc
+Report/*.run.xml
+Report/*.synctex.gz

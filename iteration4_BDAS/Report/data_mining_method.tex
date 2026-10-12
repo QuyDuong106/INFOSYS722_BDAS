@@ -1,0 +1,81 @@
+\subsection{Learning Paradigm and Research Objective}
+\label{subsec:matching-dm-methods}
+
+The objective is to estimate gallstone presence from demographic, clinical,
+laboratory, and body-composition measurements. All 319 records have a known
+binary outcome, making \textbf{supervised learning} the appropriate primary
+paradigm: predictions can be compared with observed labels on held-out records.
+\textbf{Unsupervised learning} can reveal structure without those labels, but
+similarity between patients does not necessarily correspond to disease
+status. It therefore supports exploration rather than providing the principal
+answer to the research question.
+
+\subsection{Comparison of Data-Mining Methods}
+\label{subsec:dm-family-comparison}
+
+The learning paradigm must be narrowed to a method whose output matches the
+objective. Table~\ref{tab:dm-family-comparison} distinguishes this decision
+from the choice of a particular algorithm.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Suitability of data-mining methods for the gallstone-prediction objective.}
+\label{tab:dm-family-comparison}
+\begin{tabularx}{\textwidth}{@{}p{2.8cm}XX@{}}
+\toprule
+Method & Intended output & Suitability for this project \\
+\midrule
+\textbf{Classification} &
+A known class and, where supported, its probability. &
+Directly matches labelled gallstone presence/absence and permits evaluation
+of discrimination, missed cases, and false alarms. Selected as the primary
+method. \\
+Continuous-value prediction (regression) &
+A numerical quantity, such as a laboratory concentration or severity score. &
+The target is a category, not a continuous measurement. This would answer a
+different question. Classification is also predictive; the distinction here
+concerns the type of output. \\
+Segmentation (clustering) &
+Groups of observations with similar predictor profiles. &
+Useful for exploratory subgroups, but groups need not correspond to
+gallstone status. Cluster membership alone is not a validated disease
+prediction. \\
+Association discovery &
+Frequently co-occurring conditions or measurement patterns. &
+Useful for hypothesis generation, but support and confidence do not establish
+held-out discrimination or an acceptable false-negative rate. Outcome-directed
+rules would still require supervised classification evaluation. \\
+Anomaly detection &
+Observations that differ from a reference pattern. &
+Supports review of unusual measurements, but gallstone cases comprise roughly
+half the sample and cannot be equated with anomalies. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Dimensionality reduction and feature selection are supporting preparation
+methods, not substitutes for predicting the labelled outcome. Likewise,
+forecasting future onset or modelling time to diagnosis would require
+longitudinal or event-time information not used by the current workflow.
+The available evidence supports classification of recorded gallstone status,
+not a demonstrated forecast of future disease.
+
+\subsection{Selected Method and Success Criteria}
+\label{subsec:dm-method-decision}
+
+The selected method is \textbf{supervised binary classification with
+probability estimation}. It provides the required patient-level output and
+directly supports the project benchmarks of ROC--AUC at least 0.80 and
+gallstone-class sensitivity at least 0.80. Specificity, precision, F1,
+stability, and interpretability are needed alongside these measures: predicting
+every patient as positive could satisfy sensitivity while producing
+unacceptable false alarms.
+
+The source coding is 0 = gallstones present and 1 = absent. The Python
+modelling target is recoded to 1 = present and 0 = absent, so
+$\mathrm{FNR}=\mathrm{FN}/(\mathrm{FN}+\mathrm{TP})=1-\mathrm{sensitivity}$
+measures missed gallstone cases. These are analytical project benchmarks,
+not clinical deployment thresholds. The following section compares algorithms
+within this chosen method and explains how the implemented models are built
+and selected.

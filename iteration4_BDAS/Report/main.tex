@@ -1,0 +1,132 @@
+% Master report: local section inputs in iteration4_BDAS/Report.
+\documentclass[a4paper]{article}
+% PACKAGES
+
+\usepackage[
+    top=1.7cm,
+    bottom=1.7cm,
+    left=1.9cm,
+    right=1.9cm
+]{geometry}
+
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+\usepackage{pgfgantt}
+\usepackage{longtable}
+\usepackage{array}
+
+\usepackage{xcolor}
+% Allows LaTeX to break long URLs more easily
+\Urlmuskip=0mu plus 1mu
+
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{2em}
+
+% APA 7 referencing
+\usepackage{csquotes}
+\usepackage[
+    backend=biber,
+    style=apa,
+    sorting=nyt
+]{biblatex}
+
+\addbibresource{references.bib}
+
+\title{
+    \textbf{Iteration 4 BDAS Report}\\[0.4cm]
+    \large A Data Mining Solution for Early Gallstone Prediction\\
+    to Support Sustainable Healthcare
+}
+
+\author{
+    Duong Nguyen\\
+    Student UUID: dugn944\\
+    University of Auckland
+}
+
+\date{11 October 2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% 1. INTRODUCTION
+\section{Introduction}
+\input{intro}
+
+% 2. BUSINESS AND SITUATION UNDERSTANDING
+\section{Business and Situation Understanding}
+\label{sec:business-understanding}
+\input{business_understanding}
+
+% 3. DATA UNDERSTANDING
+\section{Data understanding}
+\label{sec:data-understanding}
+\input{data_understanding}
+
+% 4. DATA PREPARTION
+\section{Data Preparation}
+\label{sec:data-preparation}
+\input{data_preparation.tex}
+
+\subsection{Data Reduction and Projection}
+\label{sec:data-reduction}
+\input{data_reduction.tex}
+
+\section{Data-Mining Method Selection}
+\label{sec:dm-method-selection}
+\input{data_mining_method.tex}
+
+\section{Algorithm Selection and Parameterisation}
+\label{sec:algorithm-selection}
+\input{algorithm_selection.tex}
+
+\section{Model Execution and Statistical Results}
+\label{sec:model-building}
+\input{Exploratory_Candiate.tex}
+
+\section{Interpretation, Evaluation and CRISP-DM Iteration}
+\label{sec:multiple-iteration}
+\input{multiple_iteration_8.tex}
+
+\section{Limitations}
+\label{sec:limitations}
+\input{limitation.tex}
+
+\newpage
+% Acknowledgement
+\section{Acknowledgement}
+I acknowledge that this submission is my own original work and has been prepared in accordance with the University of Auckland's policies on academic integrity and copyright. Further information is available from the
+\href{https://www.auckland.ac.nz/en/students/forms-policies-and-guidelines/student-policies-and-guidelines/academic-integrity-copyright.html}
+{University of Auckland Academic Integrity and Copyright guidelines}.
+
+I also confirm that I have the appropriate permission to use the data included in this project. Where data are owned by an organisation and are not publicly available, permission must be obtained from the relevant rights holder, including permission to upload the data to Canvas. The University of Auckland accepts no responsibility for any misuse of data by the student.
+
+\subsection*{Use of Artificial Intelligence}
+Generative artificial intelligence tools were used to support language editing, sentence restructuring, LaTeX formatting, and the organisation of the report. All project decisions, data analysis, interpretation of results, and final content were reviewed and completed by the author. No confidential, personal, or restricted data were shared with an artificial intelligence tool.
+
+% REFERENCES
+\newpage
+
+\printbibliography[
+    heading=bibintoc,
+    title={References}
+]
+
+\clearpage
+\appendix
+\section{Instructions for Running the Submitted Workflow}
+\label{app:running-workflow}
+\input{running_workflow.tex}
+
+\end{document}

@@ -1,0 +1,13 @@
+\subsection{Controlled Iterations and Evaluation}
+Iteration A benchmarks CART selection with Yeo--Johnson plus standardization. Iteration B changes only continuous-variable scaling to standardization. Iteration C replaces CART importance selection with RFE, retaining 20 fields and Yeo--Johnson plus standardization. Iteration D uses RFE with standardization alone. Model settings, test membership and seeds are held constant across these comparisons. This separates preparation effects from changes in model parameters.
+
+Iteration E applies 20-trial training-only Optuna searches to all five predictive families in the predeclared RFE/standardization configuration. It includes joint tuning of the stacking layer-1 boosting learners while retaining both logistic components unchanged. Matched benchmark and tuned test scores evaluate the effect of the tuning procedure; the test scores never enter its objective.
+
+\input{generated/holdout_iterations.tex}
+
+Improvement is assessed per family and per seed rather than assumed from the existence of a larger search. A positive mean AUC difference can coexist with reduced sensitivity at threshold 0.5. Consequently, the report checks both screening targets, reports false negatives and retains unsuccessful changes as evidence. Search scores are optimistic estimates after selecting the best of 20 trials; the untouched test partition supplies the corresponding internal evaluation.
+
+The measured tuning changes are mixed: logistic regression gains approximately 0.011 mean test AUC while sensitivity decreases by 0.008. Random forest, XGBoost and LightGBM have mean AUC changes of approximately $-0.005$, $-0.008$ and $-0.006$, respectively, while sensitivity increases by approximately 0.021, 0.029 and 0.004. Stacking changes AUC by approximately $-0.0004$ and gains 0.025 sensitivity. These matched outcomes do not justify claiming that a larger parameter search uniformly enhances discrimination; it changes the sensitivity/discrimination trade-off under the fixed threshold.
+
+\subsection{Interpretation and Next Iteration}
+Training-CV family choices are reported in Section 6.1; detailed test metrics appear once in Section 7. Section 8 compares controlled changes rather than restating those tables. The current evidence supports internal algorithm comparison only. The overlapping five-seed test sets, small single-source cohort, fixed decision threshold and finite parameter budget limit generalisation. Further work would predefine clinically appropriate threshold/calibration procedures inside training, assess feature-selection stability and validate the locked procedure on an external cohort.

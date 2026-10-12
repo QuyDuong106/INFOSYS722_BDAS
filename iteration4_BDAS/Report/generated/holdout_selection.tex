@@ -1,0 +1,18 @@
+\begin{table}[H]
+\centering\small
+\caption{Algorithm exploration: training-only three-fold CV AUC, mean and sample SD across five seeds.}
+\label{tab:holdout-selection}
+\begin{tabular}{lrr}
+\toprule
+Model & Fixed CV AUC & Best-trial CV AUC \\
+\midrule
+Logistic regression & 0.809 $\pm$ 0.019 & 0.819 $\pm$ 0.025 \\
+Random forest & 0.842 $\pm$ 0.021 & 0.852 $\pm$ 0.015 \\
+XGBoost & 0.838 $\pm$ 0.016 & 0.854 $\pm$ 0.021 \\
+LightGBM & 0.832 $\pm$ 0.024 & 0.848 $\pm$ 0.021 \\
+Stacking & 0.845 $\pm$ 0.017 & 0.855 $\pm$ 0.015 \\
+Prior dummy & 0.500 $\pm$ 0.000 & Not tuned \\
+\bottomrule
+\end{tabular}
+\end{table}
+Training-CV choices are seed 7: XGBoost (0.888), seed 21: Random forest (0.840), seed 42: Stacking (0.862), seed 84: Random forest (0.857), seed 123: Stacking (0.852). These are best-trial training scores, not test scores.

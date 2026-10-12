@@ -1,0 +1,11 @@
+{
+  "parameters": {
+    "model__n_estimators": 140,
+    "model__learning_rate": 0.018246618606395298,
+    "model__colsample_bytree": 0.8492857827954107,
+    "model__reg_lambda": 2.9707139443275428,
+    "model__num_leaves": 14,
+    "model__min_child_samples": 40
+  },
+  "inner_cv_auc": 0.8261363248027545
+}

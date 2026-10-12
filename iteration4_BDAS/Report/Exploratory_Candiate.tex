@@ -1,0 +1,12 @@
+\subsection{Repeated Holdout Execution}
+Five seeds (42, 7, 21, 84, 123) each produce a 223-record training partition and a 96-record test partition. Four preparation variants are benchmarked with fixed settings for five predictive families and the training-prior dummy. The predeclared RFE/standardization variant additionally receives training-only Optuna searches for all five predictive families. The dummy has no tunable hyperparameters. No test record enters an inner CV fit or parameter search.
+
+\input{generated/holdout_results.tex}
+
+Metrics use disease-positive class 1 and threshold 0.5. Outputs include ROC--AUC, average precision, accuracy, balanced accuracy, precision, sensitivity, specificity, F1, false-negative rate, log loss, confusion counts and fit/prediction time. Mean and sample standard deviation describe five split-specific results; these overlapping splits do not supply independent replication. Each model folder contains predictions, selected fields, fitted pipeline and parameter evidence. Benchmark flags test the project targets AUC $\geq0.80$ and sensitivity $\geq0.80$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.85\textwidth]{figures/modeling/holdout_average_cm.pdf}
+\caption{Average test confusion counts over five seeds for each tuned predictive family. Fractional counts arise from averaging 96-record test sets; they do not represent a single pooled independent cohort.}
+\end{figure}

@@ -1,0 +1,8 @@
+\path{iteration4_BDAS/.venv} links to the existing \path{../Experimental/.venv}; no dependencies were reinstalled. From the Iteration 4 directory run:
+\begin{verbatim}
+.venv/bin/python run_workflow.py --trials 20
+.venv/bin/python scripts/build_holdout_report.py
+cd Report
+latexmk -pdf -interaction=nonstopmode main.tex
+\end{verbatim}
+The main notebook \path{run_workflow.ipynb} invokes the same workflow. Results are saved under \path{results/holdout/seed_<seed>/variant/benchmark_or_tuned/model/}. Identical configurations resume completed model evaluations. When the default saved configuration differs, the workflow automatically chooses a separate configuration-specific directory under \path{results/holdout_runs/}; identical reruns resume there. Explicit incompatible directories are rejected with the changed fields listed. The notebook uses \texttt{metrics.attrs['output\_dir']} to locate summaries and generate figures for its own run. The saved configuration records package versions and data signature. The shared environment link is local and must be replaced by an available environment on another machine; the notebook checks dependencies without installing packages.

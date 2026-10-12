@@ -1,0 +1,19 @@
+# Local environments, caches and generated archives
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+*.zip
+# TeX build intermediates (keep source and final PDF)
+*.aux
+*.log
+*.blg
+*.bcf
+*.fls
+*.fdb_latexmk
+*.out
+*.toc
+*.run.xml
+*.synctex.gz
