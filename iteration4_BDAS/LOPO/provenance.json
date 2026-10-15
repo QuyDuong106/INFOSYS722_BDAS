@@ -1,0 +1,36 @@
+{
+  "source": "INFOSYS722/Research_Paper",
+  "copied_date": "2026-10-15",
+  "method": "non-Spark Python nested Optuna LOPO; one record per patient",
+  "seed": 42,
+  "models": [
+    "logistic",
+    "random_forest",
+    "xgboost",
+    "lightgbm",
+    "stacking"
+  ],
+  "complete_outer_predictions": 1595,
+  "outer_folds_per_model": 319,
+  "optuna_trials_per_outer_model": 20,
+  "inner_folds": 3,
+  "retained_source_features": 20,
+  "preprocessing": "training-only median/mode imputation, CART RFE20, continuous Yeo-Johnson then standardization, categorical one-hot encoding",
+  "stacking_search": "logistic meta-learner C only; fixed base learners",
+  "uncertainty": "single seed: no across-seed sample standard deviation is estimable",
+  "validation": "recomputed pooled metrics from all saved probabilities; verified 319 unique held-out rows/model and 20 completed trial records per outer fold",
+  "source_files": {
+    "optuna_lopo.py": "440e486116d99022bb89ae4f829f43728c70ac75c0d3d3490fad3800d3dd41b5",
+    "utils.py": "d36f645ab200e6242a83fdd22fc9d73a149a1ec5d20f7dfbd423064c3b24931b",
+    "modeling.py": "6d072a60fd2ef0703d82b6145f038790deec4753e3e26b63d192422de1c582c7",
+    "requirements.txt": "9352f8d4643b86f93a08c70be02116bcc4d5e5f90d5e65ec1ad2426440b8d9b0"
+  },
+  "raw_data_sha256": "2f19bd36c8be470daa62feba2e64af416d1eb7c3c4fe997987cc1b92d171a32d",
+  "output_metrics_sha256": {
+    "logistic": "e5354b7f2a8daaa20c817ed43eb6188fc5700e1e83fac8b43a670e6f9817d27f",
+    "random_forest": "554519fd692739becd4885c6c4ad443ae238c95d2b1ad3696d3307a78b806593",
+    "xgboost": "97c9b5714b8f9301bc958c4b9adafd81b175d3e2649df292fa392ef7c2b384ba",
+    "lightgbm": "b4e82fef7db7b25ab74498fd54faa2478e913a26f695b98973ffc108a31d8b1d",
+    "stacking": "17f4e507fae91ff550405690ee0cd8d0db6469b922d3243c0538e19c0df86011"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "search_version": 1,
+  "signature": "d14de55c7bec0a380289be7ecb459ab34d611980e1320e4e9875d84673bddffe",
+  "seed": 42,
+  "trials": 20,
+  "inner_folds": 3,
+  "top_k": 20,
+  "models": [
+    "stacking"
+  ],
+  "threshold": 0.5,
+  "selection": "rfe",
+  "objective": "mean inner-fold ROC-AUC",
+  "rows": 319,
+  "positive_class": "1 = gallstones present (source code 0)",
+  "stacking_search": "logistic meta-learner C only; fixed base learners",
+  "packages": {
+    "optuna": "5.0.0",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "xgboost": "3.4.1",
+    "lightgbm": "4.7.0"
+  }
+}

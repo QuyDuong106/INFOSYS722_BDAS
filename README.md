@@ -126,3 +126,5 @@ iteration4_BDAS/
 ```
 
 Caches, virtual environments, archives and temporary LaTeX build files are excluded. Research Paper work remains separate.
+
+The separate [non-Spark nested Optuna LOPO method](iteration4_BDAS/LOPO/README.md) includes the copied Research Paper source and completed 319-patient evidence for five model families. Its historical preprocessing and stacking search differ from the holdout and native Spark workflows; Section 8.5 of the report explains the distinction.

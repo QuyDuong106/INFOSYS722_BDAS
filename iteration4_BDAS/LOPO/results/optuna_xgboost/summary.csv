@@ -1,0 +1,8 @@
+model,selection,evaluation,metric,n_runs,mean,variance,std
+xgboost,rfe,lopo_optuna,accuracy,1,0.7836990595611285,,
+xgboost,rfe,lopo_optuna,f1,1,0.7940298507462686,,
+xgboost,rfe,lopo_optuna,fnr,1,0.17391304347826086,,
+xgboost,rfe,lopo_optuna,precision,1,0.764367816091954,,
+xgboost,rfe,lopo_optuna,recall,1,0.8260869565217391,,
+xgboost,rfe,lopo_optuna,roc_auc,1,0.8508530544854155,,
+xgboost,rfe,lopo_optuna,specificity,1,0.740506329113924,,

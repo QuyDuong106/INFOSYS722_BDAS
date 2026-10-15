@@ -1,0 +1,18 @@
+{
+  "fold": 314,
+  "source_row": 314,
+  "model": "xgboost",
+  "actual": 0,
+  "probability": 0.06438036262989044,
+  "best_params": {
+    "model__n_estimators": 120,
+    "model__learning_rate": 0.03790734637847922,
+    "model__colsample_bytree": 0.975196899337845,
+    "model__reg_lambda": 0.14866642664442217,
+    "model__max_depth": 4,
+    "model__subsample": 0.6156231342172863
+  },
+  "inner_cv_auc": 0.8456969306025909,
+  "sampler_seed": 356,
+  "fit_predict_seconds": 7.077312875073403
+}

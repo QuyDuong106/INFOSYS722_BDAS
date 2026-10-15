@@ -1,0 +1,18 @@
+{
+  "fold": 106,
+  "source_row": 106,
+  "model": "lightgbm",
+  "actual": 1,
+  "probability": 0.7627662248807355,
+  "best_params": {
+    "model__n_estimators": 80,
+    "model__learning_rate": 0.07024569936123871,
+    "model__colsample_bytree": 0.7818773423519463,
+    "model__reg_lambda": 1.0856167642624523,
+    "model__num_leaves": 14,
+    "model__min_child_samples": 24
+  },
+  "inner_cv_auc": 0.8440528037507983,
+  "sampler_seed": 148,
+  "fit_predict_seconds": 6.164214666932821
+}

@@ -1,0 +1,13 @@
+{
+  "fold": 93,
+  "source_row": 93,
+  "model": "stacking",
+  "actual": 1,
+  "probability": 0.8624859214671967,
+  "best_params": {
+    "final_estimator__logistic__C": 0.40671795022750884
+  },
+  "inner_cv_auc": 0.8531912838160615,
+  "sampler_seed": 135,
+  "fit_predict_seconds": 88.67982579185627
+}

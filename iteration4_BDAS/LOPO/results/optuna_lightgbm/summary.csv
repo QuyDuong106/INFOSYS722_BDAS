@@ -1,0 +1,8 @@
+model,selection,evaluation,metric,n_runs,mean,variance,std
+lightgbm,rfe,lopo_optuna,accuracy,1,0.786833855799373,,
+lightgbm,rfe,lopo_optuna,f1,1,0.793939393939394,,
+lightgbm,rfe,lopo_optuna,fnr,1,0.18633540372670807,,
+lightgbm,rfe,lopo_optuna,precision,1,0.7751479289940828,,
+lightgbm,rfe,lopo_optuna,recall,1,0.8136645962732919,,
+lightgbm,rfe,lopo_optuna,roc_auc,1,0.8395314097020206,,
+lightgbm,rfe,lopo_optuna,specificity,1,0.759493670886076,,

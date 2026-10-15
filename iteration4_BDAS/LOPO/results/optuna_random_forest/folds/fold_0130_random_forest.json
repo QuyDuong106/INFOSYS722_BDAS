@@ -1,0 +1,16 @@
+{
+  "fold": 130,
+  "source_row": 130,
+  "model": "random_forest",
+  "actual": 1,
+  "probability": 0.6881501711112865,
+  "best_params": {
+    "model__n_estimators": 80,
+    "model__max_depth": 5,
+    "model__min_samples_leaf": 9,
+    "model__max_features": "sqrt"
+  },
+  "inner_cv_auc": 0.8366972747683558,
+  "sampler_seed": 172,
+  "fit_predict_seconds": 7.9247378329746425
+}

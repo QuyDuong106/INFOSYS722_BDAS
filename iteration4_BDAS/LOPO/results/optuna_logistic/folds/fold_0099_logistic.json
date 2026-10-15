@@ -1,0 +1,13 @@
+{
+  "fold": 99,
+  "source_row": 99,
+  "model": "logistic",
+  "actual": 1,
+  "probability": 0.8210187513180741,
+  "best_params": {
+    "model__C": 16.646453817701094
+  },
+  "inner_cv_auc": 0.8612619371934668,
+  "sampler_seed": 141,
+  "fit_predict_seconds": 5.656574958004057
+}

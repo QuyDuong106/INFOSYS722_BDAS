@@ -20,6 +20,9 @@ In Colab, the project is mounted at \path{/content/drive/MyDrive/INFOSYS_722_Not
 \item \path{iteration4_BDAS/run_python_workflow.ipynb}: retains the five-family Python/Optuna prototype separately from the primary Spark submission workflow.
 \end{itemize}
 
+\subsection{Copied Non-Spark Optuna LOPO Method}
+The \href{https://github.com/QuyDuong106/INFOSYS722_BDAS/tree/main/iteration4_BDAS/LOPO}{LOPO source and completed evidence folder} contains the Research Paper nested Optuna implementation and its five completed single-seed evaluations. This is a non-Spark Python method, distinct from the Spark/CUDA notebook. Its README documents execution, preprocessing, stacking search scope and output provenance.
+
 \subsection{Evidence Provenance}
 The native Spark result tables and average confusion matrices use the latest completed raw \path{results/spark_holdout/metrics.json} output in the shared Drive folder, saved on 12 October 2026 and retrieved on 13 October 2026. The local snapshot in \path{results/spark_holdout_drive} retains the raw metrics, source notebook, source script and provenance metadata. The notebook invocation confirms training-only tuning, and validation confirms three models across all five seeds with 96 test predictions per evaluation. These fifteen evaluations use overlapping holdouts rather than independent cohorts. The earlier six-decimal notebook display remains archived in \path{results/spark_colab_reference}; it agrees with the raw output at the displayed precision. New Spark extension outputs are included only after the corresponding native execution is complete.
 
