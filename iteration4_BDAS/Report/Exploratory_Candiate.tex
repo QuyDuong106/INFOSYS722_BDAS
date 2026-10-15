@@ -1,25 +1,40 @@
-\subsection{Native Spark Execution in Google Colab}
-The submitted workflow now uses PySpark for loading, preparation, model fitting, training-only cross-validation, predictions and metrics. The author's saved Colab execution trained native Spark logistic regression, random forest and gradient-boosted trees on five stratified 70/30 holdouts (seeds 42, 7, 21, 84 and 123). Each split used 223 training and 96 test records. All 38 source fields were retained; continuous fields were standardized and original ordinal codes were preserved. Three-fold Spark CrossValidator operated on training records only.
+\subsection{Non-Spark Holdout Results: Five Optuna-tuned Models}
+\label{subsec:python-optuna-execution}
+The completed non-Spark experiment evaluates \textbf{logistic regression, random forest, XGBoost, LightGBM and stacking}. Each uses the same five stratified 70/30 holdouts (seeds 42, 7, 21, 84 and 123), with 223 training and 96 test records per split. RFE retains twenty source fields, continuous predictors receive standardization, and ordinal category codes remain unchanged. Each family receives twenty Optuna trials per seed, evaluated by three-fold training-only ROC--AUC. The selected configuration is refitted on the 223 training records and then predicts the untouched 96-record test partition. No held-out record enters fitting, RFE, scaling or parameter selection. The search spaces and training-CV evidence are documented in Section~\ref{sec:algorithm-selection}.
+
+\input{generated/holdout_optuna_results.tex}
+
+Table~\ref{tab:holdout-optuna-test} contains \textbf{test results}, not the training-CV scores shown in Section 6.1. It summarises twenty-five completed tuned model/seed evaluations from \path{results/holdout/metrics_per_seed.csv}, with fitted pipelines, predictions, best parameters and trial traces retained per model. Mean and sample standard deviation describe the five split-specific outcomes. The partitions overlap, so this variation is not independent cohort replication. Metrics use gallstones-present class 1 and a probability threshold of 0.5.
+
+Among the five Optuna-tuned candidates, logistic regression has the highest mean test AUC (0.843). Stacking has the highest mean accuracy (0.762), while XGBoost has the highest mean recall (0.825). These are metric-specific observations rather than an overall ranking: discrimination, false negatives and false positives need to be considered together. Both project targets (AUC $\geq0.80$ and recall $\geq0.80$) were met in two of five splits for logistic regression, random forest and LightGBM, and three of five for XGBoost and stacking. Training-CV selection and observed test performance can therefore favour different families without contradicting the evaluation procedure.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.85\textwidth]{figures/modeling/holdout_average_cm.pdf}
+\caption{Average non-Spark test confusion counts across five holdouts for each Optuna-tuned family. Fractional counts arise from averaging 96-record test sets.}
+\end{figure}
+
+\subsection{Non-Spark Fixed-parameter Holdout Reference}
+The following fixed-model reference uses the same RFE20 preparation and test memberships. It supports comparison with the tuned procedure without mixing fixed and tuned rows in the main Optuna result table. The training-prior dummy is included as a baseline; its perfect recall is obtained by predicting every record as positive and is accompanied by zero specificity.
+
+\input{generated/holdout_benchmark_results.tex}
+
+The controlled scaling, selector and feature-count comparisons are interpreted in Section~\ref{sec:multiple-iteration}. The full saved outputs additionally contain specificity, balanced accuracy, false-negative rate, log loss, fit/prediction time and other metrics. A larger search is not assumed to improve every model; its effect is judged against the matched fixed reference.
+
+\subsection{Native Spark Holdout Results in Google Colab}
+The native Spark execution provides a separate platform-based holdout evaluation using PySpark for loading, preparation, model fitting, training-only cross-validation, predictions and metrics. The latest completed Colab holdout output retrieved from the shared Google Drive folder trained native Spark logistic regression, random forest and gradient-boosted trees on five stratified 70/30 holdouts (seeds 42, 7, 21, 84 and 123). Each split used 223 training and 96 test records. All 38 source fields were retained; continuous fields were standardized and original ordinal codes were preserved. Three-fold Spark CrossValidator operated on training records only.
 
 \input{generated/spark_execution_evidence.tex}
+
+Table~\ref{tab:spark-colab-execution} consolidates all Spark test metrics from one experiment. The raw output was saved on 12 October 2026 and contains fifteen complete model/seed evaluations. Its full-precision metric file, source notebook invocation and provenance are retained in \path{results/spark_holdout_drive}. Bold entries identify the highest displayed means within each metric column, with ties highlighted together; error rate is minimized. Standard deviations are reported rather than ranked.
 
 The saved execution demonstrates actual use of Spark and Colab, while the GitHub repository supplies the source and saved notebook evidence. It does not establish that the newer CART20/RFE20/RFE10 extension has already run. Its pipeline performs selection within native Spark fits and records the corresponding tuning traces when executed. Spark GBT is a separate implementation from XGBoost and LightGBM.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=.95\textwidth]{figures/modeling/spark_average_cm.pdf}
-\caption{Mean native Spark test confusion counts over the author's five saved Colab holdouts. Counts are averaged rather than pooled into an independent new cohort.}
+\caption{Mean native Spark test confusion counts over the latest five completed Google Drive holdouts. Counts are averaged rather than pooled into an independent new cohort.}
 \end{figure}
 
-\subsection{Retained Python Prototype Execution}
-Five seeds (42, 7, 21, 84, 123) each produce a 223-record training partition and a 96-record test partition. Four preparation variants are benchmarked with fixed settings for five predictive families and the training-prior dummy. The predeclared RFE/standardization variant additionally receives training-only Optuna searches for all five predictive families. The dummy has no tunable hyperparameters. No test record enters an inner CV fit or parameter search.
 
-\input{generated/holdout_results.tex}
-
-Metrics use disease-positive class 1 and threshold 0.5. Outputs include ROC--AUC, average precision, accuracy, balanced accuracy, precision, sensitivity, specificity, F1, false-negative rate, log loss, confusion counts and fit/prediction time. Mean and sample standard deviation describe five split-specific results; these overlapping splits do not supply independent replication. Each model folder contains predictions, selected fields, fitted pipeline and parameter evidence. Benchmark flags test the project targets AUC $\geq0.80$ and sensitivity $\geq0.80$.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=.85\textwidth]{figures/modeling/holdout_average_cm.pdf}
-\caption{Average test confusion counts over five seeds for each tuned predictive family. Fractional counts arise from averaging 96-record test sets; they do not represent a single pooled independent cohort.}
-\end{figure}
+The native Spark results use all thirty-eight predictors and Spark estimators, whereas the non-Spark Optuna results above use RFE20 and their Python estimator implementations. They demonstrate the two completed workflows; a numerical difference between them cannot be attributed to Spark alone. No LOPO scores are included in these holdout tables.

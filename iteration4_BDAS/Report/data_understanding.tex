@@ -313,8 +313,8 @@ Exploratory data analysis (EDA) was conducted on the raw dataset before any tran
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{media/binary_target_distirbution.png}
-    \caption{Distribution of Gallstone Status in the raw dataset.}
+    \includegraphics[width=.8\linewidth,keepaspectratio]{figures/pyspark_preparation/01_outcome_distribution.png}
+    \caption{Gallstone status counts and percentages from the saved PySpark Colab visualization. Spark computed the counts; source code 0 means present and 1 means absent.}
     \label{fig:target-distribution}
 \end{figure}
 
@@ -325,12 +325,8 @@ The dataset contains 161 participants with gallstones and 158 participants witho
 
 \begin{figure}[H]
     \centering
-    \includegraphics[
-        width=\linewidth,
-        height=0.75\textheight
-    ]{media/Continous_Distribution.png}
-    \caption{Distribution of continuous variables in the raw Gallstone dataset.
-    The dashed vertical line represents the median.}
+    \includegraphics[width=1\linewidth,keepaspectratio]{figures/pyspark_preparation/03_continuous_distributions.png}
+    \caption{Selected continuous distributions from the saved PySpark Colab visualization: age, BMI, glucose, CRP, vitamin D and HDL. Spark computed histogram counts. The discussion also covers the other source measurements reviewed in Iteration 3.}
     \label{fig:cont-dis}
 \end{figure}
 
@@ -352,12 +348,8 @@ contain useful discriminatory information for the prediction task.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[
-        width=0.7\linewidth,
-        keepaspectratio
-    ]{media/category_distribution.png}
-    \caption{Distribution of categorical predictors by Gallstone Status and the
-    corresponding gallstone prevalence within each category.}
+    \includegraphics[width=.98\linewidth,keepaspectratio]{figures/pyspark_preparation/05_categorical_patterns.png}
+    \caption{Original category-code distributions from the saved PySpark Colab visualization. Bars show percentages within each outcome group. Gallstone prevalence discussed in the analysis is calculated from the original category counts and uses a different denominator.}
     \label{fig:categorical-distribution}
 \end{figure}
 

@@ -1,0 +1,22 @@
+{
+  "source_folder": "https://drive.google.com/drive/folders/18ZbTui4B-b7lXKIFuNGviJDWqlKQD746",
+  "source_file": "https://drive.google.com/file/d/1WE-PxLIZjVV2FyxR_CrZk6sP4a3S4rm-/view",
+  "source_modified_utc": "2026-10-12T09:18:55.551Z",
+  "retrieved_date": "2026-10-13",
+  "evidence": "Full-precision raw metrics.json from completed author Colab Spark holdout run; notebook invocation confirms tune=True",
+  "seeds": [
+    42,
+    7,
+    21,
+    84,
+    123
+  ],
+  "models": [
+    "logistic",
+    "random_forest",
+    "gbt"
+  ],
+  "preparation": "all 38 predictors; continuous training sample standard deviation without centering; original ordinal codes preserved",
+  "tuning": "three-fold training-only Spark CrossValidator",
+  "validation": "15 unique model/seed rows; all test confusion counts sum to 96; raw metrics agree with previous saved display to 1e-6"
+}

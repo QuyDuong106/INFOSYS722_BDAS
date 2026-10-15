@@ -1,15 +1,15 @@
 \begin{table}[H]
 \centering\small
-\caption{Measured native Spark baseline from the author-saved Colab notebook: mean and sample SD over five test holdouts. Highest means are bold.}
+\caption{Completed native PySpark holdout results from Google Drive: mean and sample SD across five seeds. Highest displayed metric means and lowest error rate are bold; ties share highlighting.}
 \label{tab:spark-colab-execution}
-\begin{tabular}{lrrrr}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrrr}
 \toprule
-Model & AUC & Sensitivity & Specificity & Accuracy \\
+Model & AUC & Accuracy & Precision & Recall & Specificity & F1 & Error rate \\
 \midrule
-Spark GBT & 0.804 $\pm$ 0.045 & 0.779 $\pm$ 0.043 & 0.662 $\pm$ 0.092 & 0.721 $\pm$ 0.056 \\
-Logistic regression & \textbf{0.873} $\pm$ 0.027 & \textbf{0.900} $\pm$ 0.040 & \textbf{0.721} $\pm$ 0.072 & \textbf{0.810} $\pm$ 0.029 \\
-Random forest & 0.806 $\pm$ 0.056 & 0.713 $\pm$ 0.081 & 0.717 $\pm$ 0.041 & 0.715 $\pm$ 0.052 \\
+Spark GBT & 0.804 $\pm$ 0.045 & 0.721 $\pm$ 0.056 & 0.701 $\pm$ 0.057 & 0.779 $\pm$ 0.043 & 0.662 $\pm$ 0.092 & 0.737 $\pm$ 0.044 & 0.279 $\pm$ 0.056 \\
+Logistic regression & \textbf{0.873} $\pm$ 0.027 & \textbf{0.810} $\pm$ 0.029 & \textbf{0.766} $\pm$ 0.042 & \textbf{0.900} $\pm$ 0.040 & \textbf{0.721} $\pm$ 0.072 & \textbf{0.826} $\pm$ 0.023 & \textbf{0.190} $\pm$ 0.029 \\
+Random forest & 0.806 $\pm$ 0.056 & 0.715 $\pm$ 0.052 & 0.714 $\pm$ 0.044 & 0.713 $\pm$ 0.081 & 0.717 $\pm$ 0.041 & 0.713 $\pm$ 0.060 & 0.285 $\pm$ 0.052 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
-Each model has five 96-record test evaluations. These scores were recovered from the saved six-decimal display, not from a new local run. The three native Spark families and all-field preparation differ from the five-family Python prototypes; their scores are not pooled together.
+All metrics describe the same three models and five 96-record test holdouts, using the full-precision completed Drive output dated 12 October 2026. Recall is sensitivity; error rate equals one minus accuracy. Precision and F1 measure different properties, so their values need not equal accuracy or AUC. These test metrics are separate from training-CV selection evidence.

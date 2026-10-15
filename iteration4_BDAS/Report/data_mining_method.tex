@@ -79,3 +79,14 @@ measures missed gallstone cases. These are analytical project benchmarks,
 not clinical deployment thresholds. The following section compares algorithms
 within this chosen method and explains how the implemented models are built
 and selected.
+
+\subsection{CRISP-DM Design, Tools and Spark/Colab Execution}
+\label{subsec:crispdm-tools}
+The latest completed native Spark holdout output retrieved from Google Drive supplies completed evidence for standardization with all thirty-eight predictors, three native model families and five holdouts. Section~\ref{sec:model-building} contains those measured scores and confusion matrices. The primary Colab notebook extends that workflow to CART20, RFE20 and RFE10, allowing the selection-method and feature-count comparisons to be repeated within Spark. Selection and scaling remain inside the training-CV pipeline, and the extension records split membership, selected fields, candidate CV scores and fitted models.
+
+\input{generated/spark_iteration_evidence.tex}
+
+Native Spark scaling divides continuous predictors by their training sample standard deviation without centering, matching the saved Spark baseline. This differs from the centered standardization in the Python comparisons above. Consequently, those comparisons explain the completed preparation experiments but cannot substitute for native Spark results. The new feature-selection runs are prepared for Colab; the report uses the saved Spark evidence until their execution is complete.
+
+
+The tools implement the CRISP-DM cycle rather than define a new learning objective. Spark SQL and the saved Colab visualizations support data understanding; Spark ML pipelines support preparation and modelling; training-CV traces and held-out predictions support evaluation; GitHub versions source and report artifacts, and Google Drive persists Colab inputs and results. The retained Python/Optuna workflow provides the separately labelled five-family comparison. Reproducible runtime, data/code signatures and checkpointed outputs connect these stages. Platform choice is not evidence of predictive superiority.

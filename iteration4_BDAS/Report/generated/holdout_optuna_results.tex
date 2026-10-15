@@ -1,0 +1,16 @@
+\begin{table}[H]
+\centering\small
+\caption{Completed non-Spark Optuna-tuned holdout results: mean and sample SD across five matched seeds, RFE20 and standardization. Highest displayed means are bold.}
+\label{tab:holdout-optuna-test}
+\begin{tabular}{lrrrrr}
+\toprule
+Model & AUC & Accuracy & Precision & Recall & F1 \\
+\midrule
+Logistic regression & \textbf{0.843} $\pm$ 0.037 & 0.754 $\pm$ 0.041 & 0.732 $\pm$ 0.046 & 0.808 $\pm$ 0.071 & 0.766 $\pm$ 0.040 \\
+Random forest & 0.803 $\pm$ 0.032 & 0.731 $\pm$ 0.027 & 0.704 $\pm$ 0.034 & 0.804 $\pm$ 0.043 & 0.750 $\pm$ 0.022 \\
+XGBoost & 0.793 $\pm$ 0.033 & 0.746 $\pm$ 0.032 & 0.713 $\pm$ 0.027 & \textbf{0.825} $\pm$ 0.062 & 0.764 $\pm$ 0.034 \\
+LightGBM & 0.793 $\pm$ 0.015 & 0.723 $\pm$ 0.030 & 0.701 $\pm$ 0.021 & 0.779 $\pm$ 0.079 & 0.736 $\pm$ 0.040 \\
+Stacking & 0.824 $\pm$ 0.038 & \textbf{0.762} $\pm$ 0.039 & \textbf{0.740} $\pm$ 0.044 & 0.812 $\pm$ 0.042 & \textbf{0.774} $\pm$ 0.034 \\
+\bottomrule
+\end{tabular}
+\end{table}

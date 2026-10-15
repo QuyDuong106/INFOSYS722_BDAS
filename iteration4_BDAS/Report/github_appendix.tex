@@ -5,6 +5,13 @@ The Iteration 4 source, report, evidence and native Spark notebooks are availabl
 \end{center}
 The repository is organised around CRISP-DM. Its \path{iteration4_BDAS} folder contains the report, original data and retained Python prototype; \path{PySpark} contains the native Spark implementation, saved executions, visualization notebook and new feature-selection extension.
 
+\subsection{Shared Google Drive Project}
+The shareable project folder contains the Colab working files, input data and saved execution outputs:
+\begin{center}
+\href{https://drive.google.com/drive/folders/1ob80bZnuNHHwhGT3gY-HXrj1-4I0VZ_F?usp=sharing}{Open the shared Iteration 4 Google Drive folder}
+\end{center}
+In Colab, the project is mounted at \path{/content/drive/MyDrive/INFOSYS_722_Notebook/iteration4_BDAS}. The completed native holdout output is stored in its \path{results/spark_holdout} folder. The research LOPO workflow has a separate output folder and is not included as holdout evidence.
+
 \subsection{Colab Entry Points}
 \begin{itemize}
 \item \href{https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/run_spark_iterations_colab.ipynb}{Native Spark CART20/RFE20/RFE10 extension}: the primary workflow for new controlled Spark preparation experiments. The local \path{iteration4_BDAS/run_workflow.ipynb} invokes this same extension.
@@ -14,4 +21,6 @@ The repository is organised around CRISP-DM. Its \path{iteration4_BDAS} folder c
 \end{itemize}
 
 \subsection{Evidence Provenance}
-The native baseline table is extracted from the author's saved Colab display in \path{PySpark/run_spark_workflow.ipynb}. The retained source commit and display precision are recorded in \path{results/spark_colab_reference/provenance.json}. The table contains fifteen measured model/seed evaluations, not fifteen independent cohorts. Its displayed values were rounded to six decimal places. New Spark extension outputs record runtime versions, code/data signatures, saved split membership, selected fields and CV search evidence. Scores are included in the report only when the corresponding native execution is complete.
+The native Spark result tables and average confusion matrices use the latest completed raw \path{results/spark_holdout/metrics.json} output in the shared Drive folder, saved on 12 October 2026 and retrieved on 13 October 2026. The local snapshot in \path{results/spark_holdout_drive} retains the raw metrics, source notebook, source script and provenance metadata. The notebook invocation confirms training-only tuning, and validation confirms three models across all five seeds with 96 test predictions per evaluation. These fifteen evaluations use overlapping holdouts rather than independent cohorts. The earlier six-decimal notebook display remains archived in \path{results/spark_colab_reference}; it agrees with the raw output at the displayed precision. New Spark extension outputs are included only after the corresponding native execution is complete.
+
+The preparation figures also retain a separate provenance record in \path{results/spark_visualization_reference}. They are extracted from the saved Colab outputs of \path{PySpark/spark_visualization_colab.ipynb}, whose latest GitHub file change is commit \texttt{99f8af2} (12 October 2026). Spark computed the diagnostic summaries; the report does not claim a new local Spark visualization run.

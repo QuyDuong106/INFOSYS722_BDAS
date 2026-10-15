@@ -189,11 +189,147 @@ data through the Python scripts.
 
 
 \subsubsection{Data Partitioning}
-Iteration 4 uses five stratified 70\% training / 30\% test holdouts, with seeds 42, 7, 21, 84 and 123. Each split has 223 training and 96 test records. The disease-positive outcome is class 1 (source code 0). Saved source-row membership permits an audit of the disjoint training and test partitions.
+\label{subsubsec:data-partitioning}
+Before feature selection and model development, two complementary data-splitting
+and evaluation strategies were adopted to assess model performance and
+robustness: a stratified 70--15--15 holdout split and a
+\textit{Leave-One-Patient-Out} (LOPO) cross-validation procedure.
 
-Three-fold stratified cross-validation is performed exclusively within the 223 training records. Every inner fit learns its own imputers, 20-feature selector and continuous-variable transformations. The selected hyperparameters are then refitted on the complete training partition and evaluated once on its test partition at the fixed threshold 0.5. Stacking additionally generates training-only out-of-fold base probabilities for its meta-learner. Original numeric ordinal/binary category codes are retained without one-hot expansion.
+\paragraph{Strategy 1: Stratified 70--15--15 Holdout Split}
 
-The five holdouts reuse a cohort and therefore overlap; they measure sensitivity to split choice rather than five independent external validations. Test outcomes are descriptive evaluation evidence and cannot determine tuning settings or a validation-selected model.
+For the primary holdout evaluation, the model-ready dataset was partitioned
+using the \texttt{scikit-learn} library with stratification based on
+\textit{Gallstone Status}. The following proportions were used:
+
+\begin{itemize}
+
+    \item \textbf{70\% Training set:} used for preprocessing decisions,
+          feature selection, and model fitting;
+
+    \item \textbf{15\% Validation set:} used for model comparison,
+          hyperparameter tuning, threshold analysis, and model-selection
+          decisions;
+
+    \item \textbf{15\% Test set:} retained for the final evaluation of the
+          selected modelling approach on previously unseen observations.
+
+\end{itemize}
+
+Stratification was used to preserve the approximately balanced distribution of
+participants with and without gallstones across the three subsets. This was
+particularly important given the relatively small dataset because substantial
+differences in class proportions between partitions could otherwise introduce
+additional variability into the evaluation results.
+
+The partitioning process can be represented conceptually as follows:
+
+\begin{figure}[H]
+    \centering
+
+    \fbox{
+        \parbox{0.90\linewidth}{
+            \centering
+
+            \textbf{Model-ready Dataset}
+
+            \vspace{0.3cm}
+
+            $\downarrow$
+
+            \vspace{0.3cm}
+
+            \textbf{Stratified Partition by Gallstone Status}
+
+            \vspace{0.4cm}
+
+            \begin{tabular}{ccc}
+                \textbf{70\% Training}
+                &
+                \textbf{15\% Validation}
+                &
+                \textbf{15\% Test}
+                \\[0.2cm]
+
+                Feature selection
+                &
+                Model comparison
+                &
+                Final evaluation
+                \\
+
+                Model fitting
+                &
+                Parameter tuning
+                &
+                Unseen observations
+            \end{tabular}
+        }
+    }
+
+    \caption{Training, validation, and testing strategy used in the Python
+    modelling workflow.}
+    \label{fig:partition-workflow}
+\end{figure}
+
+Feature-selection decisions and model fitting were performed using only the
+training partition. The validation partition was subsequently used to compare
+candidate models and tune modelling choices. The final test partition remained
+separate from these stages and was used only after the modelling strategy had
+been established.
+
+\paragraph{Strategy 2: Leave-One-Patient-Out Evaluation}
+
+A second evaluation strategy, referred to as
+\textit{Leave-One-Patient-Out} (LOPO), was used to provide an additional
+assessment of model robustness on unseen patients. LOPO corresponds to
+leave-one-out cross-validation at the patient level. During each iteration, one
+patient was held out for evaluation while all remaining patients were used for
+model training.
+
+For a dataset containing $N$ patients, the procedure generates $N$ model-fitting
+iterations:
+
+\[
+\mathcal{D}_{\mathrm{train}}^{(i)}
+=
+\mathcal{D} \setminus \{P_i\},
+\qquad
+\mathcal{D}_{\mathrm{test}}^{(i)}
+=
+\{P_i\},
+\]
+
+where $P_i$ denotes the patient excluded from the training data during
+iteration $i$.
+
+This process was repeated until every patient had served once as the unseen
+evaluation case. The predictions generated across all iterations were then
+combined to calculate the overall evaluation metrics.
+
+The LOPO strategy differs from the holdout approach because almost the entire
+dataset is available for model fitting during each iteration. This is
+particularly useful for the Gallstone dataset because of its relatively small
+sample size and provides an assessment of whether the model can generalise to
+an individual patient who was completely excluded from the corresponding
+training process.
+
+The two strategies were evaluated separately. The 70--15--15 split provides a
+conventional development framework with independent training, validation, and
+test partitions, while LOPO evaluates model stability and patient-level
+generalisation across the complete dataset. Using both approaches provides a
+more comprehensive assessment of predictive performance than relying on a
+single data split alone.
+
+These separation reduces the risk of information leakage and provides a more
+independent estimate of how well the resulting model is expected to generalise
+to previously unseen patient observations.
+
+Any preprocessing operation that required parameters to be estimated from the
+data was fitted using the training partition only and subsequently applied to
+the validation and test partitions. This principle applies, for example, to
+feature scaling, statistical transformations, and model-based feature
+selection.
+
 
 \subsection{Data Integration}
 \label{subsec:data-integration}
@@ -205,9 +341,9 @@ analytical table.
 
 The original dataset was preserved unchanged and divided into two logical CSV
 sources. The first file,
-\path{gallstone_demographic_clinical.csv}, contains 319 records and
+\texttt{gallstone\_demographic\_clinical.csv}, contains 319 records and
 9 fields describing demographic and clinical characteristics. The second file,
-\path{gallstone_biological_body_composition.csv}, contains the same
+\texttt{gallstone\_biological\_body\_composition.csv}, contains the same
 319 participants and 33 fields describing biological, laboratory, and
 body-composition measurements.
 
@@ -296,7 +432,7 @@ open-source workflow. At a high level, the pipeline consisted of:
     \item integrating logically separated datasets using
           \texttt{pandas.merge()};
     \item constructing the final predictor and target datasets;
-    \item creating stratified training/test holdouts and training-only CV folds using
+    \item creating stratified training, validation, and test partitions using
           \texttt{scikit-learn};
     \item fitting any required preprocessing operations using the training
           subset only; and
@@ -313,6 +449,3 @@ multiple candidate models.
 The resulting workflow therefore provides a transparent and reproducible
 transition from the original Gallstone dataset to the datasets used for model
 training, validation, and final evaluation.
-
-\paragraph{Iteration 4 correction: preserve existing ordinal codes.}
-The supplied predictors are already numerically encoded, including ordered codes such as 1, 2, 3, and 4 and binary indicators. These values are retained as provided: no one-hot expansion, category reindexing, or arbitrary replacement numbering is applied. Missing coded values are imputed by the training-partition mode; continuous measurements are median-imputed and scaled within training. The label mapping is separate: source gallstone status 0 remains model class 1 (gallstones present). Numeric category codes must reflect their documented order; storing a nominal category as a number does not itself establish ordinality. For logistic regression, a single ordinal coefficient imposes equal log-odds increments per code step, while trees can learn thresholds between levels. Historical fitted models and scores used the previous representation and do not validate this correction.

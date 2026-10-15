@@ -10,6 +10,7 @@ from pyspark.sql import functions as F, Window
 from sklearn.model_selection import train_test_split
 from spark_workflow import create_spark, load_dataset, make_pipeline, pooled_metrics, prediction_frame, MODEL_NAMES
 from spark_feature_selection import SparkFeatureSelector
+from spark_cv_reporting import cv_evidence, print_cv_results, save_cv_summary
 VARIANTS = {'all_standard': ('all', None), 'cart20_standard': ('cart', 20),
             'rfe20_standard': ('rfe', 20), 'rfe10_standard': ('rfe', 10)}
 SEEDS = (42, 7, 21, 84, 123)
@@ -32,7 +33,7 @@ def run(spark, frame, numeric, categorical, *, data_path, output_dir=None,
     if not variants or any(v not in VARIANTS for v in variants):raise ValueError('Unknown preparation variant')
     if not models or any(m not in MODEL_NAMES for m in models):raise ValueError('Unknown Spark model')
     source_hash=hashlib.sha256(Path(data_path).read_bytes()).hexdigest()
-    code_hash=hashlib.sha256(Path(__file__).read_bytes()+Path(__file__).with_name('spark_feature_selection.py').read_bytes()+Path(__file__).with_name('spark_workflow.py').read_bytes()).hexdigest()
+    code_hash=hashlib.sha256(Path(__file__).read_bytes()+Path(__file__).with_name('spark_feature_selection.py').read_bytes()+Path(__file__).with_name('spark_workflow.py').read_bytes()+Path(__file__).with_name('spark_cv_reporting.py').read_bytes()).hexdigest()
     config=dict(protocol_version=1,source_hash=source_hash,code_hash=code_hash,spark_version=spark.version,
         python_version=platform.python_version(),seeds=list(seeds),variants=list(variants),models=list(models),
         test_fraction=.3,inner_folds=3,tune=tune,threshold=.5,scaling='continuous training sample std, no centering; ordinal codes unchanged')
@@ -42,7 +43,7 @@ def run(spark, frame, numeric, categorical, *, data_path, output_dir=None,
     if cp.exists() and json.loads(cp.read_text())!=config:raise ValueError('Explicit directory has incompatible configuration; choose a new directory')
     cp.write_text(json.dumps(config,indent=2))
     records=frame.select('source_row','label').orderBy('source_row').collect()
-    all_metrics=[]
+    all_metrics=[];all_cv=[]
     for seed in seeds:
         train_ids,test_ids=train_test_split([r.source_row for r in records],test_size=.3,
             stratify=[r.label for r in records],random_state=seed)
@@ -73,10 +74,9 @@ def run(spark, frame, numeric, categorical, *, data_path, output_dir=None,
                             evaluator=BinaryClassificationEvaluator(metricName='areaUnderROC'),
                             numFolds=3,foldCol='cv_fold',seed=seed,parallelism=1)
                         search=cv.fit(inner);fitted=search.bestModel
-                        scores=[float(v) for v in search.avgMetrics]
-                        evidence=[dict(parameters={p.name:v for p,v in params.items()},mean_cv_auc=score)
-                                  for params,score in zip(grid,scores)]
-                        best=max(range(len(scores)),key=lambda i:scores[i]);cv_score=scores[best]
+                        evidence=cv_evidence(search,grid,seed=seed,model=name,variant=variant)
+                        best_row=next(row for row in evidence if row['selected'])
+                        cv_score=best_row['mean_cv_auc']
                     else:
                         fitted=pipeline.fit(train);evidence=[];cv_score=None
                     predictions=prediction_frame(fitted,test,name,seed).cache()
@@ -93,6 +93,15 @@ def run(spark, frame, numeric, categorical, *, data_path, output_dir=None,
                     (dest/'selected_features.json').write_text(json.dumps([c.removesuffix('__imputed').removesuffix('__code') for c in fields],indent=2))
                     (dest/'cv_search.json').write_text(json.dumps(evidence,indent=2))
                     checkpoint.write_text(json.dumps(metric,indent=2,allow_nan=False));predictions.unpersist()
+                if tune:
+                    evidence=json.loads((dest/'cv_search.json').read_text())
+                    if not all('selected' in row and 'seed' in row for row in evidence):
+                        raise ValueError('Old checkpoint lacks full CV evidence; use a new run directory')
+                    print_cv_results(evidence,output_dir=dest)
+                    all_cv.extend(evidence)
+                    save_cv_summary(all_cv,out)
+                else:
+                    print_cv_results([])
                 if metric['rows']!=test_n:raise ValueError('Checkpoint test size mismatch')
                 all_metrics.append(metric)
                 (out/'progress.json').write_text(json.dumps(dict(complete=False,evaluations=len(all_metrics),expected=len(seeds)*len(variants)*len(models))))

@@ -1,0 +1,18 @@
+{
+  "source_repository": "https://github.com/QuyDuong106/INFOSYS722_BDAS",
+  "source_notebook": "PySpark/spark_visualization_colab.ipynb",
+  "notebook_last_changed_commit": "99f8af22fcc494dc114972bea529867ba5c4ef91",
+  "checked_branch": "origin/main",
+  "retrieved_date": "2026-10-13",
+  "notebook_sha256": "658ca2d9ed3fdfcc793da2a62cc32c77fb0f13888100a1691fc177f6755e49d7",
+  "figures": [
+    "01_outcome_distribution.png",
+    "02_missingness.png",
+    "03_continuous_distributions.png",
+    "04_distributions_by_outcome.png",
+    "05_categorical_patterns.png",
+    "06_correlation_heatmap.png"
+  ],
+  "evidence": "PNG outputs extracted from saved author Colab execution; no local Spark rerun",
+  "computation": "Spark aggregates, histogram bins, grouped approximate quartiles, and Pearson correlation; Matplotlib renders collected summaries"
+}

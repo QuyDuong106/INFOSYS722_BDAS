@@ -1,5 +1,6 @@
 """Generate report tables and averaged confusion matrices from completed runs."""
 from pathlib import Path
+from report_table_format import bold_best_cells
 import json
 import argparse
 import numpy as np
@@ -16,6 +17,7 @@ if not json.loads((out/'complete.json').read_text())['complete']:raise RuntimeEr
 m=pd.read_csv(out/'metrics_per_seed.csv');s=pd.read_csv(out/'summary.csv');primary=s[s.variant.eq('rfe_standard')]
 names={'logistic':'Logistic regression','random_forest':'Random forest','xgboost':'XGBoost','lightgbm':'LightGBM','stacking':'Stacking','dummy_prior':'Prior dummy'}
 def table(caption,headers,rows,label):
+ rows=bold_best_cells(rows,headers)
  return '\\begin{table}[H]\n\\centering\\small\n\\caption{'+caption+'}\n\\label{'+label+'}\n\\begin{tabular}{'+ 'l'+'r'*(len(headers)-1)+'}\n\\toprule\n'+' & '.join(headers)+r' \\'+ '\n\\midrule\n'+'\n'.join(' & '.join(str(x) for x in row)+r' \\' for row in rows)+'\n\\bottomrule\n\\end{tabular}\n\\end{table}\n'
 def ms(row,metric,bold=False):
  mean=f"{row[metric+'_mean']:.3f}"
@@ -39,12 +41,33 @@ text=table('RFE20/standardization test results: mean and sample SD across five h
 tuned=m[m.evaluation.eq('tuned')&~m.model.eq('dummy_prior')]
 text+='Both project targets were met in '+', '.join(f"{names[n]}: {int((g.auc_benchmark_met & g.sensitivity_benchmark_met).sum())}/5 splits" for n,g in tuned.groupby('model'))+'. Full metric distributions and all four benchmark variants are saved in the result CSVs.\n'
 (gen/'holdout_results.tex').write_text(text)
+
+# Dedicated held-out tables keep tuned models prominent in the execution section.
+ordered=['logistic','random_forest','xgboost','lightgbm','stacking']
+optuna=primary[primary.evaluation.eq('tuned') & primary.model.isin(ordered)]
+assert len(optuna)==5
+raw=m[m.variant.eq('rfe_standard') & m.evaluation.eq('tuned') & m.model.isin(ordered)]
+assert len(raw)==25 and raw.groupby('model').seed.nunique().eq(5).all()
+rows=[]
+for name in ordered:
+ row=optuna[optuna.model.eq(name)].iloc[0]
+ rows.append([names[name],*[ms(row,metric) for metric in ['roc_auc','accuracy','precision','recall','f1']]])
+text=table('Completed non-Spark Optuna-tuned holdout results: mean and sample SD across five matched seeds, RFE20 and standardization. Highest displayed means are bold.', 'Model|AUC|Accuracy|Precision|Recall|F1'.split('|'),rows,'tab:holdout-optuna-test')
+(gen/'holdout_optuna_results.tex').write_text(text)
+rows=[]
+for name in [*ordered,'dummy_prior']:
+ row=primary[primary.model.eq(name)&primary.evaluation.eq('benchmark')].iloc[0]
+ rows.append([names[name],*[ms(row,metric) for metric in ['roc_auc','recall','specificity','accuracy']]])
+text=table('Non-Spark fixed-parameter holdout reference: RFE20 and standardization with the same five test partitions. Highest displayed means are bold, including ties and the prior dummy.', 'Model|AUC|Recall|Specificity|Accuracy'.split('|'),rows,'tab:holdout-fixed-test')
+(gen/'holdout_benchmark_results.tex').write_text(text)
+
 rows=[]
 for n in names:
  if n=='dummy_prior':continue
  means=s[s.evaluation.eq('benchmark')&s.model.eq(n)].set_index('variant').roc_auc_mean
  rows.append([names[n],*[f'{means[v]:.3f}' for v in ['cart_yeo_standard','cart_standard','rfe_yeo_standard','rfe_standard']]])
 text=table('Controlled fixed-model preparation comparisons: mean test AUC over five matched seeds.','Model|CART+YJ|CART+Std|RFE+YJ|RFE+Std'.split('|'),rows,'tab:holdout-preparation')
+(gen/'holdout_preparation.tex').write_text(text)
 p=pd.read_csv(out/'tuning_comparison.csv');rows=[]
 for n,g in p[~p.model.eq('dummy_prior')].groupby('model'):
  rows.append([names[n],f'{g.roc_auc_delta.mean():+.3f}',f'{g.recall_delta.mean():+.3f}',f'{int((g.roc_auc_delta>0).sum())}/5'])

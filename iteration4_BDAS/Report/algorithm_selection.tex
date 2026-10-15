@@ -1,10 +1,60 @@
-\subsection{Exploratory Algorithm Analysis}
+\subsection{Exploratory Algorithm Analysis within the DM Objectives}
 \label{subsec:algorithm-exploration}
-The primary submission uses native Spark logistic regression, random forest and GBT, representing linear, bagging and boosting approaches. Spark CrossValidator maximizes training-only three-fold ROC--AUC; the saved test table supplies execution evidence rather than a tuning objective. The original five-family training-CV exploration below remains Python prototype evidence and is not attributed to native Spark. Logistic regression provides a compact additive reference; random forest tests nonlinear interactions with bagging; XGBoost and LightGBM test regularised boosting; stacking tests whether their out-of-fold probabilities provide complementary information. The training-prior dummy establishes chance discrimination. All candidate pipelines receive the same training partitions and inner folds. Imputation, feature selection and scaling are refitted within every inner fold, including the base learners inside stacking.
+The data-mining objective is supervised classification of recorded gallstone presence, with project targets of ROC--AUC at least 0.80 and disease-class recall at least 0.80. Exploration therefore asks whether a candidate learns useful discrimination beyond a no-information baseline, whether additional flexibility is justified on this small cohort, and whether its predictions can support a sensitivity-oriented decision rule. Recall at a fixed threshold also depends on calibration and the false-positive trade-off, so ROC--AUC alone does not establish that both objectives are met. This step combines model-family reasoning with measured \emph{training-only} CV evidence. The held-out evaluation in Section~\ref{sec:model-building} answers the subsequent question of how the selected procedures generalise.
+
+\subsubsection{Statistical-based Family: Logistic Regression}
+Logistic regression models a linear combination of predictors on the log-odds scale and converts it to a disease probability. It supplies a regularised, relatively interpretable reference for the demographic, laboratory and body-composition fields. It does not require normally distributed predictors, but its additive linear predictor may miss nonlinear effects and interactions unless these are constructed explicitly. Correlated measurements can affect coefficient stability, motivating training-only selection and regularisation. The standalone model's regularisation strength is tuned; the logistic components inside stacking remain fixed as specified in Section 6.3. Its inclusion tests whether more complex learners improve on a compact statistical model rather than assuming complexity is beneficial.
+
+\subsubsection{Tree-based Families: Bagging and Boosting}
+\paragraph{Random forest.} Random forest averages many trees fitted with sampling and predictor randomisation. It can represent nonlinear thresholds and interactions without requiring one additive relationship across the cohort. This is useful for heterogeneous clinical measurements, but the resulting ensemble is less directly interpretable than logistic regression. Tree depth, leaf size and feature sampling must constrain variance when the training set contains only 223 records. Its training-CV performance tests whether interaction flexibility adds useful information beyond the statistical reference.
+
+\paragraph{XGBoost.} XGBoost sequentially adds regularised trees to improve an objective. Learning rate, tree count, depth, row/column sampling and regularisation control the balance between fit and overfitting. This family tests whether controlled boosting captures patterns not recovered by bagging. A high training score alone would be insufficient; the search evaluates each proposed configuration on inner validation folds.
+
+\paragraph{LightGBM.} LightGBM provides a different gradient-boosted-tree implementation and leaf-growth strategy. Its leaf count and minimum child size are important controls for the small cohort. It is included to compare boosting implementations empirically under the same training partitions, not because computational efficiency establishes higher predictive accuracy. The additional flexibility requires training-CV support.
+
+\paragraph{Native Spark GBT.} Spark gradient-boosted trees supply a native Spark boosting candidate alongside Spark logistic regression and random forest. Its estimator and parameter grid differ from XGBoost and LightGBM. Consequently, its evidence is tracked separately rather than treating its scores as interchangeable with either Python boosting library.
+
+\subsubsection{Combined Family: Stacking}
+Stacking combines logistic regression, random forest, XGBoost and LightGBM base probabilities through a logistic meta-learner. Its purpose is to test complementary prediction patterns across statistical, bagging and boosting approaches. The meta-learner is trained on out-of-fold base predictions; each base learner's preparation is fitted within that construction. This avoids training the meta-model on predictions obtained by fitting the same observations. Stacking adds computational cost and can propagate unstable base predictions, so it is retained only as an empirically evaluated candidate, not assumed to outperform simpler learners. The completed search jointly tunes the two boosting base learners while leaving the base and meta logistic regressions unchanged.
+
+\subsubsection{Dummy Family: No-information and Chance Baseline}
+The dummy establishes what can be achieved without any patient predictors. The implemented \texttt{DummyClassifier} with \texttt{strategy='prior'} learns the training class proportions and assigns the same disease probability to every patient. Its constant probability has ROC--AUC 0.50 and therefore supplies a chance-discrimination reference. This is the relevant baseline for a comparison with random/no-information choices, but it is \emph{not} a randomly sampled classifier: a uniform or stratified random-label strategy would be a separate experiment. At threshold 0.5 the prior baseline can predict every record as positive, yielding perfect recall and zero specificity. It must therefore be assessed alongside discrimination and false positives rather than praised for recall alone. The distinction follows the \href{https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html}{documented dummy strategies}.
+
+\subsubsection{Empirical Training-CV Exploration and Selection}
+The five predictive families and dummy receive matched training partitions and stratified three-fold CV memberships. The fixed comparison uses the predeclared RFE20/standardization preparation; the tuned comparison gives each predictive family twenty Optuna trials per seed. Every inner fit repeats imputation, RFE and scaling, including base pipelines within stacking. The following table is the empirical evidence used in Step 6.1, rather than a conceptual comparison postponed to the result section.
 
 \input{generated/holdout_selection.tex}
 
-The strongest training-CV family is selected independently for each seed; test AUC does not replace this choice. Logistic regression remains an interpretable reference even if a more complex family has higher CV discrimination. Forest and boosting candidates are justified by plausible nonlinear clinical associations, but their added complexity needs measured training-CV support. Stacking is justified only where cross-validated evidence supports combining predictions; fitting more components alone is not evidence of improvement. Section 7 reports test outcomes separately, so this step documents the evidence used for selection rather than duplicating result tables.
+All predictive families exceed the dummy's mean CV AUC of 0.500. Fixed stacking has the highest mean (0.845), narrowly followed by random forest (0.842) and XGBoost (0.838); logistic regression has the lowest predictive-family mean (0.809). The best-trial means increase to 0.855 for stacking, 0.854 for XGBoost, 0.852 for random forest, 0.848 for LightGBM and 0.819 for logistic regression. The search improves the observed training-CV objective by approximately 0.010--0.016, but the best-trial score is optimistic after selecting among trials and is not an unbiased test-performance estimate.
+
+These findings justify retaining nonlinear families alongside the statistical reference. They do not justify a universal winner: the gap between the three leading tuned means is only 0.003, and the seed-specific CV choices are random forest twice, stacking twice and XGBoost once. All five families are consequently retained in the planned held-out benchmark, while any seed-specific family selection uses its training-CV ranking. Logistic regression remains useful as the interpretable reference, and the dummy establishes the minimum discrimination standard. High CV AUC does not establish the recall target at threshold 0.5; that trade-off is evaluated on the held-out records. No test result is used retrospectively to choose the family, preparation or Optuna objective.
+
+\subsubsection{Why Cross-validation Represents the Selection Scenario}
+In practical model development, candidate models are fitted on training observations, compared on validation observations, and then evaluated on records excluded from those decisions. The inner folds mimic repeated validation opportunities within the available training sample. They reduce dependence on one small validation allocation and allow every outer-training record to contribute to validation once per three-fold cycle. Three folds are a computational compromise for repeated RFE, stacking and tuning; they do not make validation uncertainty disappear.
+
+For each Iteration 4 seed, the 223-record outer training set supplies three inner folds (approximately 148--149 fit records and 74--75 validation records). Mean validation AUC selects parameters and, where applicable, the candidate family. The selected pipeline is refitted on all 223 training records before the locked procedure predicts the 96 outer test records. The test set is an assessment set, not another tuning fold. Repeatedly choosing settings from its scores would invalidate this separation. The same rule covers preprocessing, feature count, threshold or calibration choices. This design follows the distinction between tuning and outer evaluation in the \href{https://scikit-learn.org/stable/modules/cross_validation.html}{cross-validation guidance}.
+
+This mimics selecting a procedure before observing new patient outcomes from the same source population. It does not reproduce temporal deployment, a new hospital or external clinical validation. The five outer holdouts overlap, and stratification preserves class representation rather than supplying independent cohorts. Section 7 therefore reports held-out outcomes separately from the development evidence in this subsection.
+
+\subsubsection{Training-CV Exploration and Selection in Native Spark}
+The Spark comparison retains the same linear/bagging/boosting rationale, using native logistic regression, random forest and GBT. Its completed baseline retains all thirty-eight predictors and uses three-fold training-only ROC--AUC to choose a configuration within each family. These model grids are a separate comparison from the five-family Python/Optuna study. The saved Spark notebook confirms \texttt{tune=True}, but its retained metrics contain test outcomes only: numerical inner-CV AUC values and the complete winning-parameter trace are unavailable in that baseline snapshot. Table~\ref{tab:spark-cv-exploration} records the selection procedure and evidence status without substituting test scores for missing validation scores.
+
+\begin{table}[H]
+\centering\small
+\caption{Native Spark training-CV exploration and model-selection evidence. Numerical CV scores are not retained in the completed baseline.}
+\label{tab:spark-cv-exploration}
+\begin{tabularx}{\textwidth}{@{}p{2.7cm}p{1.5cm}XX@{}}
+\toprule
+Candidate & Settings & Validation selection rule & Available evidence \\
+\midrule
+Logistic regression & 3 & Maximum mean three-fold training AUC within family. & Tuned execution confirmed; inner-CV AUC not retained. \\
+Random forest & 4 & Same folds and AUC objective; compare depth and tree count. & Tuned execution confirmed; inner-CV AUC not retained. \\
+Spark GBT & 4 & Same folds and AUC objective; compare depth and learning step. & Tuned execution confirmed; inner-CV AUC not retained. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+No empirical cross-family Spark winner is claimed from missing CV scores. All three families are retained for the planned Spark holdout comparison, whose test metrics appear in Section 7. The updated holdout scripts print every candidate CV AUC and selected parameter set, and save \path{training_cv_results.csv}, \path{training_cv_summary.csv} and per-model \path{cv_search.json}. These training-only traces and selected-field artifacts allow the next completed run to supply a numerical Spark exploration table; the historical test-only output is not retroactively assigned CV scores. This evidence gap is specific to the saved native baseline and does not remove the measured five-family CV comparison above. The optional CUDA XGBoost research extension is a hybrid Spark-preparation/driver-GPU implementation, not an additional completed native Spark baseline.
 
 \subsection{Controlled Preparation and Candidate Settings}
 The native Spark extension implements all-field standardization, CART20, RFE20 and RFE10 as matched preparation versions. Its persistable selector uses native Spark CART importance and one-field-at-a-time RFE. All supervised selection and scaling are refitted within CV. The separate completed Python RFE10 iteration tests the feature-count change against its fixed RFE20 benchmark.
@@ -15,5 +65,25 @@ Each model receives 20 Optuna TPE trials for each of five seeds, scored by mean 
 
 Stacking searches the twelve settings of its layer-1 XGBoost and LightGBM pipelines jointly. Its base logistic regression and meta logistic regression remain fixed at $C=1$; its forest and three-fold stacking configuration remain fixed. RFE retains 20 fields with step 1 and a CART selector of depth 5 and minimum leaf size 4. These selector controls are compared through the controlled preprocessing benchmarks rather than included in the classifier search. The fixed search budget is reproducible but cannot establish exhaustive optimisation. Per-model trial CSVs, best-parameter JSONs and fitted pipelines document all tested values, including unsuccessful improvement attempts.
 
-\subsection{Native Spark Parameterisation}
-The saved Spark implementation and feature-selection extension search logistic regularisation 0.001, 0.01 and 0.1; forest depths 3 and 5 with tree counts 40 and 60; and GBT depths 2 and 3 with step sizes 0.05 and 0.1. Three-fold stratified training CV supplies the objective. The selector is held at CART depth 5 and minimum leaf size 4, while the preparation iteration compares all, CART20, RFE20 and RFE10. New extension artifacts record every grid candidate and mean CV score. The earlier saved baseline table does not retain per-candidate CV traces, so those scores are not reconstructed from test results.
+\subsection{Native Spark Tuning and Parameterisation}
+\label{subsec:native-spark-tuning}
+The completed native baseline and the preparation extension use the same classifier grids in Table~\ref{tab:spark-tuning-grid}. Spark stratified three-fold training CV maximizes ROC--AUC independently for each family and outer seed. The best configuration is refitted on the outer training partition; held-out scores never choose a grid setting. Fixed estimator controls are listed separately from searched values so the table does not imply that they were empirically optimised.
+
+\begin{table}[H]
+\centering\small
+\caption{Native Spark classifier tuning grids and fixed controls; three-fold training-only CV is used for every grid.}
+\label{tab:spark-tuning-grid}
+\begin{tabularx}{\textwidth}{@{}p{2.5cm}XXp{1cm}@{}}
+\toprule
+Model & Searched parameters and values & Fixed estimator controls & Grid size \\
+\midrule
+Logistic regression & \texttt{regParam}: 0.001, 0.01, 0.1. & \texttt{elasticNetParam}=0; \texttt{maxIter}=300. & 3 \\
+Random forest & \texttt{maxDepth}: 3, 5; \texttt{numTrees}: 40, 60. & \texttt{minInstancesPerNode}=4; seed fixed per run. & 4 \\
+Spark GBT & \texttt{maxDepth}: 2, 3; \texttt{stepSize}: 0.05, 0.1. & \texttt{maxIter}=60; \texttt{minInstancesPerNode}=4; seed fixed per run. & 4 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Across the three families, these grids require 33 inner classifier fits and three outer-training refits per seed, excluding preprocessing costs. The completed baseline retains all thirty-eight fields. The extension compares all fields, CART20, RFE20 and RFE10 with native CART depth five and minimum four instances per node; those selector settings are fixed rather than classifier-grid dimensions. Every selector is fitted inside training CV. The newer LOPO implementation reuses a prepared inner partition across classifier settings when preparation parameters are unchanged, preserving this separation while reducing repeated work.
+
+The original baseline saves fitted best pipelines and test metrics but not all candidate CV scores. The extension writes those scores to \path{cv_search.json}; their future availability is not treated as retrospective evidence that every setting in this table improved performance. The CUDA XGBoost Optuna search belongs to the separate research LOPO workflow and is not part of this native Spark holdout grid.

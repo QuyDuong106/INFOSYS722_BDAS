@@ -1,0 +1,16 @@
+\begin{table}[H]
+\centering\small
+\caption{Controlled fixed-model preparation comparisons: mean test AUC over five matched seeds.}
+\label{tab:holdout-preparation}
+\begin{tabular}{lrrrr}
+\toprule
+Model & CART+YJ & CART+Std & RFE+YJ & RFE+Std \\
+\midrule
+Logistic regression & \textbf{0.861} & 0.836 & \textbf{0.864} & \textbf{0.832} \\
+Random forest & 0.810 & 0.811 & 0.808 & 0.808 \\
+XGBoost & 0.809 & 0.809 & 0.801 & 0.801 \\
+LightGBM & 0.805 & 0.814 & 0.794 & 0.799 \\
+Stacking & 0.845 & \textbf{0.839} & 0.837 & 0.824 \\
+\bottomrule
+\end{tabular}
+\end{table}

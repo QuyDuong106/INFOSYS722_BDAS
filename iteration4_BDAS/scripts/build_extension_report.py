@@ -1,6 +1,7 @@
 """Report measured saved-Colab Spark results and matched Python RFE10 evidence."""
 import argparse,json
 from pathlib import Path
+from report_table_format import bold_best_cells
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -11,20 +12,27 @@ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--spark-results',
 gen=R/'Report/generated';gen.mkdir(exist_ok=True)
 names={'logistic':'Logistic regression','random_forest':'Random forest','gbt':'Spark GBT','xgboost':'XGBoost','lightgbm':'LightGBM','stacking':'Stacking'}
 def table(caption,headers,rows,label):
+ rows=bold_best_cells(rows,headers)
  return '\\begin{table}[H]\n\\centering\\small\n\\caption{'+caption+'}\n\\label{'+label+'}\n\\begin{tabular}{l'+'r'*(len(headers)-1)+'}\n\\toprule\n'+' & '.join(headers)+r' \\'+'\n\\midrule\n'+'\n'.join(' & '.join(row)+r' \\' for row in rows)+'\n\\bottomrule\n\\end{tabular}\n\\end{table}\n'
 def ms(mean,std,bold=False):
  value=f'{mean:.3f}'
  if bold:value=r'\textbf{'+value+'}'
  return f'{value} $\\pm$ {std:.3f}'
-spark=pd.read_csv(R/'results/spark_colab_reference/metrics_per_seed.csv')
+latest=R/'results/spark_holdout_drive/metrics_per_seed.csv'
+spark=pd.read_csv(latest if latest.exists() else R/'results/spark_colab_reference/metrics_per_seed.csv')
 assert len(spark)==15 and spark.groupby('model').seed.nunique().eq(5).all()
-summary=spark.groupby('model')[['roc_auc','accuracy','sensitivity','specificity']].agg(['mean','std'])
+reported=['roc_auc','accuracy','precision','sensitivity','specificity','f1','error_rate']
+summary=spark.groupby('model')[reported].agg(['mean','std'])
 rows=[]
 for model,row in summary.iterrows():
- rows.append([names[model],*[ms(row[(metric,'mean')],row[(metric,'std')],np.isclose(row[(metric,'mean')],summary[(metric,'mean')].max(),rtol=0,atol=1e-12)) for metric in ['roc_auc','sensitivity','specificity','accuracy']]])
-text=table('Measured native Spark baseline from the author-saved Colab notebook: mean and sample SD over five test holdouts. Highest means are bold.','Model|AUC|Sensitivity|Specificity|Accuracy'.split('|'),rows,'tab:spark-colab-execution')
-text+='Each model has five 96-record test evaluations. These scores were recovered from the saved six-decimal display, not from a new local run. The three native Spark families and all-field preparation differ from the five-family Python prototypes; their scores are not pooled together.\n'
+ rows.append([names[model],*[ms(row[(metric,'mean')],row[(metric,'std')]) for metric in reported]])
+text=table('Completed native PySpark holdout results from Google Drive: mean and sample SD across five seeds. Highest displayed metric means and lowest error rate are bold; ties share highlighting.','Model|AUC|Accuracy|Precision|Recall|Specificity|F1|Error rate'.split('|'),rows,'tab:spark-colab-execution')
+text=text.replace(r'\begin{tabular}',r'\resizebox{\textwidth}{!}{\begin{tabular}',1).replace(r'\end{tabular}',r'\end{tabular}}',1)
+text+='All metrics describe the same three models and five 96-record test holdouts, using the full-precision completed Drive output dated 12 October 2026. Recall is sensitivity; error rate equals one minus accuracy. Precision and F1 measure different properties, so their values need not equal accuracy or AUC. These test metrics are separate from training-CV selection evidence.\n'
 (gen/'spark_execution_evidence.tex').write_text(text)
+# The formerly separate additional-metrics table is consolidated above.
+legacy=gen/'spark_additional_evidence.tex'
+if legacy.exists():legacy.unlink()
 fig,axes=plt.subplots(1,3,figsize=(11,3.6));vmax=spark[['TN','FP','FN','TP']].max().max()
 for ax,(model,g) in zip(axes,spark.groupby('model')):
  vals=g[['TN','FP','FN','TP']].mean().to_numpy().reshape(2,2)

@@ -2,6 +2,7 @@
 import csv
 import hashlib
 import json
+from spark_cv_reporting import cv_evidence, print_cv_results, save_cv_summary
 from pathlib import Path
 
 from pyspark.sql import SparkSession, Window, functions as F, types as T
@@ -16,7 +17,7 @@ from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 
 CODED_FIELDS = {"gender", "comorbidity", "cad", "hypothyroidism", "hyperlipidemia", "dm", "hfa"}
 MODEL_NAMES = ("logistic", "random_forest", "gbt")
-PROTOCOL_VERSION = 2
+PROTOCOL_VERSION = 3
 
 
 def create_spark(master="local[*]", app_name="Iteration4-BDAS-Colab"):
@@ -115,10 +116,13 @@ def make_pipeline(name, numeric, categorical, seed=42):
     return Pipeline(stages=[*stages, estimator]), grid
 
 
-def fit_model(train, name, numeric, categorical, *, seed=42, tune=False, inner_folds=3):
+def fit_model(train, name, numeric, categorical, *, seed=42, tune=False, inner_folds=3,
+              return_cv=False, cv_output_dir=None):
     pipeline, grid = make_pipeline(name, numeric, categorical, seed)
     if not tune:
-        return pipeline.fit(train)
+        fitted = pipeline.fit(train)
+        print_cv_results([])
+        return (fitted, [], None) if return_cv else fitted
     if inner_folds < 2:
         raise ValueError("inner_folds must be at least two")
     if min(r['count'] for r in train.groupBy("label").count().collect()) < inner_folds:
@@ -128,7 +132,14 @@ def fit_model(train, name, numeric, categorical, *, seed=42, tune=False, inner_f
     cv = CrossValidator(estimator=pipeline, estimatorParamMaps=grid,
                         evaluator=BinaryClassificationEvaluator(metricName="areaUnderROC"),
                         numFolds=inner_folds, foldCol="cv_fold", seed=seed, parallelism=1)
-    return cv.fit(inner).bestModel
+    inner=inner.cache()
+    try:
+        search=cv.fit(inner)
+        rows=cv_evidence(search,grid,seed=seed,model=name)
+        best=print_cv_results(rows,output_dir=cv_output_dir)
+        return (search.bestModel, rows, best) if return_cv else search.bestModel
+    finally:
+        inner.unpersist()
 
 
 def prediction_frame(fitted, test, model, fold):
@@ -162,7 +173,7 @@ def run_holdout(spark, frame, numeric, categorical, *, output_dir, seeds=(42,7,2
     """Exact stratified 70/30 splits; Spark CV is fitted on training only."""
     import math
     out=Path(output_dir);out.mkdir(parents=True,exist_ok=True)
-    all_metrics=[]
+    all_metrics=[];all_cv=[]
     for seed in seeds:
         # Match the canonical main workflow's exact membership, without pandas.
         from sklearn.model_selection import train_test_split
@@ -172,11 +183,20 @@ def run_holdout(spark, frame, numeric, categorical, *, output_dir, seeds=(42,7,2
         test=frame.filter(F.col("source_row").isin([int(i) for i in test_ids]))
         predictions=None
         for name in MODEL_NAMES:
-            fitted=fit_model(train,name,numeric,categorical,seed=seed,tune=tune,inner_folds=3)
+            model_dir=out/f"seed_{seed}"/name
+            fitted,cv_rows,best=fit_model(train,name,numeric,categorical,seed=seed,tune=tune,
+                inner_folds=3,return_cv=True,cv_output_dir=model_dir)
+            all_cv.extend(cv_rows)
             scored=prediction_frame(fitted,test,name,seed)
             predictions=scored if predictions is None else predictions.unionByName(scored)
             fitted.write().overwrite().save(str(out/f"seed_{seed}"/name/"model"))
         predictions.write.mode("overwrite").option("header",True).csv(str(out/f"seed_{seed}"/"predictions"))
-        for metric in pooled_metrics(predictions):metric['seed']=seed;all_metrics.append(metric)
+        for metric in pooled_metrics(predictions):
+            metric['seed']=seed
+            selected=next((row for row in all_cv if row['seed']==seed and row['model']==metric['model'] and row['selected']),None)
+            metric['inner_cv_auc']=selected['mean_cv_auc'] if selected else None
+            all_metrics.append(metric)
+        save_cv_summary(all_cv,out)
     (out/"metrics.json").write_text(json.dumps(all_metrics,indent=2))
+    if tune:print("Training-CV evidence:",out/"training_cv_results.csv",flush=True)
     return all_metrics
