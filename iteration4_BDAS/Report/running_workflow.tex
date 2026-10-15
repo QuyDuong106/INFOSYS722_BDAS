@@ -1,5 +1,5 @@
 \subsection{Primary Spark Workflow}
-Open \path{run_workflow.ipynb} in Google Colab, or use the repository's \path{PySpark/run_spark_iterations_colab.ipynb}. Run the setup and integration-check cells before the model cells. Setup reuses existing runtime packages, installs only missing Spark dependencies in Colab, checks Java, and loads the current repository layout. It does not require a ZIP or Google Drive mounting.
+Open the repository's \path{PySpark/run_spark_iterations_colab.ipynb} in Google Colab. Run the setup and integration-check cells before the model cells. Setup reuses existing runtime packages, installs only missing Spark dependencies in Colab, checks Java, and loads the current repository layout. It does not require a ZIP or Google Drive mounting.
 
 The primary extension compares all-field standardization, CART20, RFE20 and RFE10 with Spark logistic regression, random forest and GBT. The same five holdout seeds are used for every version. Feature selection, imputation and scaling are fitted within the three training-only CV folds. Identical configurations resume completed model checkpoints; changed code/data/runtime settings select a separate default output directory.
 
@@ -11,7 +11,7 @@ python ../PySpark/spark_iterations.py \
 Within the GitHub checkout, use \path{PySpark/spark_iterations.py} and the raw dataset under \path{iteration4_BDAS/data/raw/}. Full extension output includes Spark models, predictions, selected fields, CV grids/scores and JSON/CSV metrics. New native results must be completed before they are reported as measured evidence.
 
 \subsection{Retained Python Prototype and Report Build}
-The original five-family workflow remains in \path{run_python_workflow.ipynb} and \path{run_python_workflow.py}. The canonical local working copy is \path{INFOSYS722_BDAS/iteration4_BDAS}. Its ignored local \path{.venv} links to the existing \path{../../INFOSYS722/Experimental/.venv}; no packages were reinstalled for the Python feature-count iteration. To reproduce the additional fixed-model RFE10 comparison:
+The original five-family workflow remains in \path{run_python_workflow.ipynb} and \path{holdout_workflow.py}. The canonical local working copy is \path{INFOSYS722_BDAS/iteration4_BDAS}. Its ignored local \path{.venv} links to the existing \path{../../INFOSYS722/Experimental/.venv}; no packages were reinstalled for the Python feature-count iteration. To reproduce the additional fixed-model RFE10 comparison:
 \begin{verbatim}
 .venv/bin/python holdout_workflow.py \
   --variants rfe10_standard \

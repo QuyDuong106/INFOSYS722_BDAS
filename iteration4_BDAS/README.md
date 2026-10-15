@@ -62,13 +62,13 @@ Open the primary Colab notebook and run setup, integration checks and experiment
 From a Spark-capable local checkout:
 
 ```bash
-cd iteration4_BDAS
-python run_workflow.py
+cd PySpark
+python spark_iterations.py
 # Or run selected preparation versions:
-python run_workflow.py --variants rfe20_standard rfe10_standard
+python spark_iterations.py --variants rfe20_standard rfe10_standard
 ```
 
-The main local notebook `iteration4_BDAS/run_workflow.ipynb` invokes the same native extension. `PySpark/run_spark_iterations_colab.ipynb` is the repository's dedicated Colab entrypoint. Java and dependencies in [PySpark/requirements-spark.txt](../PySpark/requirements-spark.txt) must be available for local Spark execution. The existing author environment has no local PySpark/Java; the extension has not been executed there.
+`PySpark/run_spark_iterations_colab.ipynb` is the repository's dedicated Colab entrypoint. Java and dependencies in [PySpark/requirements-spark.txt](../PySpark/requirements-spark.txt) must be available for local Spark execution. The existing author environment has no local PySpark/Java; the extension has not been executed there.
 
 ### Retained Python prototype
 
@@ -76,7 +76,7 @@ Use an existing environment with [requirements.txt](requirements.txt):
 
 ```bash
 cd iteration4_BDAS
-python run_python_workflow.py --trials 20
+python holdout_workflow.py --trials 20
 python holdout_workflow.py --variants rfe10_standard --output-dir results/holdout_rfe10
 ```
 
@@ -107,6 +107,10 @@ python -m unittest discover -s spark_tests -v
 
 The normal checks cover holdout separation, exact split counts, matching resumes and configuration separation. New native integration checks cover RFE width, unchanged category codes, model persistence and training-CV/holdout separation. They are skipped locally without PySpark, and are included before full execution in the Colab notebook. All 30 new Python pipelines reproduced stored probabilities, with ten selected fields verified separately for each stacking base.
 
+## Notebook organization
+
+Use `PySpark/run_spark_workflow.ipynb` for the saved all-field Spark holdout results and `PySpark/spark_visualization_colab.ipynb` for the completed exploratory plots. The separate `run_spark_iterations_colab.ipynb` implements the additional feature-selection experiments; it is not a duplicate of the saved baseline. The Python prototype is also a distinct implementation. Redundant `run_workflow` launchers and the root-level LOPO notebook copy have been removed. Archived source notebooks under `results/` are retained as report provenance.
+
 ## Layout
 
 ```text
@@ -119,8 +123,7 @@ PySpark/
   spark_workflow.py                Native baseline and shared helpers
   tests/                          Spark-runtime integration checks
 iteration4_BDAS/
-  run_workflow.ipynb, run_workflow.py   Primary Spark entrypoints
-  run_python_workflow.ipynb/.py        Retained Python entrypoints
+  run_python_workflow.ipynb            Retained Python notebook
   holdout_workflow.py, optuna_holdout.py
   data/raw/
   results/holdout/, holdout_rfe10/, spark_colab_reference/
