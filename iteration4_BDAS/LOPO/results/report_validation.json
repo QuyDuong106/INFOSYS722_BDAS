@@ -1,0 +1,43 @@
+{
+  "source": "Observed completed Research Paper outputs",
+  "training_seed": 42,
+  "outer_folds": 319,
+  "training_records_per_outer_fit": 318,
+  "inner_cv_folds": 3,
+  "optuna_trials_per_model_per_outer_fit": 20,
+  "bootstrap_applied": false,
+  "new_training_performed": false,
+  "metric_verification": "all saved scores match held-out probabilities to 1e-12",
+  "source_hashes": {
+    "logistic": {
+      "metrics.csv": "e5354b7f2a8daaa20c817ed43eb6188fc5700e1e83fac8b43a670e6f9817d27f",
+      "predictions.csv": "330849ec3d6c318ba48e0ae5c85a732af3f4c7f45578554e1acf97153dc22438",
+      "run_config.json": "596ba9684d33affd815910b86565318160024d943518655af57082e238717e80",
+      "progress.json": "9cbd991159edab15b6f28361f9adefc8c4683cb6b7466dfcf01f9460211304bb"
+    },
+    "random_forest": {
+      "metrics.csv": "554519fd692739becd4885c6c4ad443ae238c95d2b1ad3696d3307a78b806593",
+      "predictions.csv": "615ba1832d0faa969b3779caf662716d8935712014c01cdee78c32a2c6eeb7a9",
+      "run_config.json": "92efeb3def75da8af4d0950c3157c8918d76c31dd234584224be7026eb4bcfa0",
+      "progress.json": "5fdf6b850cdaae157bb181f3fab5decb030ca901b0a89e7a330f9580cdc24926"
+    },
+    "xgboost": {
+      "metrics.csv": "97c9b5714b8f9301bc958c4b9adafd81b175d3e2649df292fa392ef7c2b384ba",
+      "predictions.csv": "d9f8022379d0b17e39d56b00f34c68a947bb193e4eeb0782eadbb0cfbb283db1",
+      "run_config.json": "1814ba278f0fd81a1189561f781eb78ecd6dbfc0169535dc65816099b7c6fa1c",
+      "progress.json": "c526b2517bf8c3fa927cfe5e15053573f567f4c5c888c9194b96e8108c787a07"
+    },
+    "lightgbm": {
+      "metrics.csv": "b4e82fef7db7b25ab74498fd54faa2478e913a26f695b98973ffc108a31d8b1d",
+      "predictions.csv": "a06082b5b310494c37bb92e2309a7c7430abc7ea91b8d9abc45afd14ded5771f",
+      "run_config.json": "2320a8d67e351bb53dab563e10ad730f8b6e5f3e06224310941103c38ddc550f",
+      "progress.json": "e6399cf20ff8c62057d043a9c9c813096666a77e4d20efa7eedce3babebafc62"
+    },
+    "stacking": {
+      "metrics.csv": "17f4e507fae91ff550405690ee0cd8d0db6469b922d3243c0538e19c0df86011",
+      "predictions.csv": "54308c5836d9b3da47d515c44bd24798ed2aabe39403e0b6c16a9490103d3e9a",
+      "run_config.json": "1e95211b6a09562c443bb2ce946d69e1e1102e1b80519366fa6c829513fc9aa2",
+      "progress.json": "18334d3351db29579badc4b241493613a6cb5893924722ca2c2bdb3a5e913017"
+    }
+  }
+}

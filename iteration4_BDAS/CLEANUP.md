@@ -1,0 +1,3 @@
+Retired historical files, duplicate documentation, unused report images and old build intermediates were moved to `/Users/quyduong106/projects/INFOSYS722/archives/iteration4_cleanup_2026-10-12`. Current code, raw data, completed holdout results, report inputs/PDF and the shared environment link were retained.
+
+On 15 October 2026 the duplicate Iteration 4 working directory was consolidated into `/Users/quyduong106/projects/INFOSYS722_BDAS/iteration4_BDAS`. The old path is a symbolic redirect to that single physical folder to preserve the active notebook session. Its most recent executed notebook was retained. Native Spark source remains in `INFOSYS722_BDAS/PySpark`; the existing environment was not reinstalled.

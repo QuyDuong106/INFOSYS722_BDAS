@@ -27,3 +27,14 @@ python run_lopo.py --models logistic --trials 2 --max-folds 2 --output-dir resul
 Resume a check or interrupted run with the **same settings and output directory**, omitting `--max-folds` to finish all patients. Partial runs do not write full-evaluation metrics. Configuration/data/package changes require a new output directory. The imported completed per-model output directories remain the evidence snapshot; new experiments default here to a separate `results/new_runs` location.
 
 The existing original data and three source modules were copied without changing their modelling logic. The small launcher, this documentation, provenance record and combined metric/prediction CSVs are new. The report's Section 8.5 discusses the saved results; they do not replace its five-seed holdout benchmark.
+
+
+## Observed Research Paper results only
+
+Each outer fit trains on 318 records, using three-fold training CV and 20 Optuna trials. The evaluation pools all **319 held-out patient predictions** per model. Only training seed 42 is complete in this archive, so no across-seed mean or variance is claimed. No bootstrap estimates are included.
+
+```bash
+python report_results.py
+```
+
+This verifies each original `metrics.csv` against `predictions.csv` and its completed configuration, copies the observed values into `results/metrics_combined.csv`, records source hashes in `results/report_validation.json`, and regenerates `../Report/generated/research_optuna_lopo.tex`. It performs no tuning, retraining or resampling. The canonical working folder is `INFOSYS722_BDAS/iteration4_BDAS`.

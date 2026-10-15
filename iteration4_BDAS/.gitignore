@@ -13,3 +13,6 @@ Report/*.out
 Report/*.toc
 Report/*.run.xml
 Report/*.synctex.gz
+
+# Ignore the local shared-environment symlink as well as environment directories.
+.venv

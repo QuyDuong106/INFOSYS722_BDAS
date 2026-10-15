@@ -126,3 +126,6 @@ iteration4_BDAS/
 ```
 
 Caches, virtual environments, archives and temporary LaTeX build files are excluded. Research Paper work remains separate.
+
+
+The single local working copy is `/Users/quyduong106/projects/INFOSYS722_BDAS/iteration4_BDAS`. The redundant `INFOSYS722/iteration4_BDAS` copy has been removed; that old path is now a compatibility symlink to this folder so the active Colab notebook can continue autosaving without creating another physical copy. Native Spark modules remain in `../PySpark`; `.venv` links to the existing `../../INFOSYS722/Experimental/.venv` environment without reinstalling packages.
