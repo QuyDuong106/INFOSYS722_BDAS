@@ -325,8 +325,8 @@ The dataset contains 161 participants with gallstones and 158 participants witho
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth,keepaspectratio]{figures/pyspark_preparation/03_continuous_distributions.png}
-    \caption{Selected continuous distributions from the saved PySpark Colab visualization: age, BMI, glucose, CRP, vitamin D and HDL. Spark computed histogram counts. The discussion also covers the other source measurements reviewed in Iteration 3.}
+    \includegraphics[width=\linewidth,height=.86\textheight,keepaspectratio]{figures/pyspark_preparation/03_continuous_distributions.png}
+    \caption{Distributions of all 31 continuous predictors from the latest saved PySpark Colab execution. Spark computed the histogram counts; predictors follow the dataset/report order. The unused final subplot is hidden.}
     \label{fig:cont-dis}
 \end{figure}
 
@@ -337,6 +337,13 @@ Several variables, including age, height, BMI, extracellular water (ECW), lean m
 The distributions also reveal several extreme observations, particularly in metabolic and laboratory variables. These values require further assessment during the data-quality stage to determine whether they represent valid clinical measurements or potential data errors. They will not be removed automatically, as unusual values may contain clinically meaningful information relevant to gallstone risk.
 
 Overall, this exploration indicates that the predictors differ substantially in both scale and distribution. Consequently, standardisation and possible transformations of strongly skewed variables will be considered during data preparation, depending on the modelling technique used. The next stage of the analysis compares these predictors with \textit{Gallstone Status} to identify variables that may provide useful discriminatory information for the classification models.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth,height=.83\textheight,keepaspectratio]{figures/pyspark_preparation/04_distributions_by_outcome.png}
+    \caption{All 31 continuous predictors by gallstone outcome from the latest saved PySpark Colab execution: blue represents absent and orange represents present. Spark computed grouped approximate quartiles. Boxes show the median and interquartile range; whiskers show observed minima and maxima, rather than 1.5-IQR fences.}
+    \label{fig:continuous-distributions-by-outcome}
+\end{figure}
 
 \subsubsection{Distribution of categorical features and Association with Gallstone Status}
 \label{subsubsec:categorical-distribution}

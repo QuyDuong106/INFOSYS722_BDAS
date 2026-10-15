@@ -9,6 +9,12 @@ The `spark_feature_selection.py` estimator fits supervised CART/RFE ranking insi
 Raw data stays under `../iteration4_BDAS/data/raw`. The main report, saved Spark metrics with provenance, and retained Python prototype are under `../iteration4_BDAS`. Whole-cohort exploratory figures do not supply held-out model-selection evidence. Java and Spark are needed for native execution; setup installs only missing Python packages in Colab and does not reinstall the author's local environment.
 
 
+### All-feature visualization
+
+Open [spark_visualization_colab.ipynb in Colab](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/spark_visualization_colab.ipynb) to reproduce the latest exploratory figures. `PLOT_FEATURES = list(CONTINUOUS)` includes all **31 continuous predictors**, with dynamic 8 × 4 grids for overall histograms and distributions grouped by outcome. Spark computes the bin counts and approximate quartiles; Matplotlib renders the plots. Boxplot whiskers represent observed minimum and maximum values.
+
+The notebook contains the author's completed Colab outputs. Both figures replace the corresponding report figures while preserving the analysis. See the [report PDF](../iteration4_BDAS/Report/main.pdf) and [archived executed notebook with provenance](../iteration4_BDAS/results/spark_visualization_reference) for the exact outputs used on 15 October 2026. These are exploratory full-cohort summaries, separate from training-CV and test results.
+
 ### Separate research RFE/LOPO notebook
 
 Copy `run_spark_lopo_colab.ipynb`, `spark_lopo.py` and `spark_lopo_acceleration.py` to `/content/drive/MyDrive/INFOSYS_722_Notebook/iteration4_BDAS`, keeping the existing Spark modules and dataset. Select a Colab GPU runtime. Native Spark LR/RF/GBT and fold-safe RFE/scaling remain CPU-based; the additional `xgboost_gpu` candidate uses CUDA XGBoost with training-only Optuna (`GPU_TRIALS=20`). The GPU bridge collects only small prepared partitions to the driver (20,000-row limit) and is explicitly hybrid rather than a native Spark GPU classifier. CUDA verification rejects silent CPU fallback. No packages are installed locally.

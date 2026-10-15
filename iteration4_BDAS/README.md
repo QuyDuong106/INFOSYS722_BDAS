@@ -8,7 +8,7 @@ This gallstone-prediction project follows **CRISP-DM**. Development and report w
 | --- | --- |
 | [Primary Spark iterations](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/run_spark_iterations_colab.ipynb) | All-field standardization, CART20, RFE20 and RFE10; five holdouts and training-only Spark CV |
 | [Saved Spark execution](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/run_spark_workflow.ipynb) | Author's completed all-field run and saved native Spark result table |
-| [Saved Spark visualization](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/spark_visualization_colab.ipynb) | Spark summaries, distributions, outcome comparisons and correlations |
+| [Saved Spark visualization](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/PySpark/spark_visualization_colab.ipynb) | All 31 continuous predictors: distributions, outcome comparisons and correlations |
 | [Retained Python prototype](https://colab.research.google.com/github/QuyDuong106/INFOSYS722_BDAS/blob/main/iteration4_BDAS/run_python_workflow.ipynb) | Five-family fixed benchmarks and Optuna tuning |
 
 [Report PDF](Report/main.pdf) · [PySpark implementation](../PySpark) · [Iteration 4 files](.)
@@ -21,6 +21,8 @@ Investigate whether routine demographic, comorbidity, laboratory and body-compos
 
 The [raw dataset](data/raw/dataset_gallstone) has 319 records (161 cases and 158 controls) and 38 predictors. Source outcome 0 means gallstones present; model class 1 means present. The loaders validate numeric fields and outcome codes, check duplicates and remove exported index/identifier fields. Existing ordinal/binary predictor codes are preserved. The Spark visualization notebook supports exploratory understanding; full-cohort plots are not held-out model-selection evidence. Dataset provenance is documented in the report bibliography.
 
+The latest saved Colab visualization plots **all 31 continuous predictors** in two 8 × 4 grids: overall histograms and boxplots grouped by gallstone outcome. Spark computes histogram counts and grouped approximate quartiles; Matplotlib renders the figures. Boxplot whiskers show observed minimum and maximum values. Both figures are included in the [updated report](Report/main.pdf), with the existing analysis retained. The [executed notebook snapshot and provenance](results/spark_visualization_reference) preserve the outputs used in the report (15 October 2026).
+
 ## 3. Data preparation
 
 Native Spark prepares four matched versions: all source fields, CART importance selection with 20 fields, CART-based recursive feature elimination with 20 fields, and RFE with 10 fields. Continuous missing values use training medians; coded fields use training modes. Continuous values are divided by their training sample standard deviation without centering, matching the saved Spark baseline; category codes are passed through unchanged.
@@ -31,7 +33,7 @@ The retained Python prototype separately compares CART/RFE20 with Yeo–Johnson 
 
 ## 4. Modelling
 
-All workflows use five stratified 70/30 holdouts with seeds 42, 7, 21, 84 and 123: 223 training and 96 test records per split. Iteration 4 uses holdout only. Native Spark model families are logistic regression, random forest and gradient-boosted trees. Tuning uses three stratified CV folds exclusively inside training, with full pipeline preparation refitted per fold. The classifier threshold is fixed at 0.5.
+The primary holdout workflows use five stratified 70/30 holdouts with seeds 42, 7, 21, 84 and 123: 223 training and 96 test records per split. Section 8.5 separately reports the Research Paper nested Optuna LOPO experiment, with three-fold CV within each outer training set. Native Spark model families are logistic regression, random forest and gradient-boosted trees. Tuning uses three stratified CV folds exclusively inside training, with full pipeline preparation refitted per fold. The classifier threshold is fixed at 0.5.
 
 Native grids compare logistic regularisation 0.001/0.01/0.1; forest depth 3/5 and tree count 40/60; and GBT depth 2/3 and step size 0.05/0.1. The selector uses depth 5/minimum leaf size 4; controlled preparation versions compare feature-selection method and 20/10-field width. Spark extension outputs retain every grid candidate and CV score.
 
@@ -43,7 +45,8 @@ Completed evidence is clearly separated by implementation:
 
 - [Python baseline/tuning results](results/holdout): 150 model evaluations and 500 Optuna trials; metrics, selected fields, parameters, models and predictions.
 - [New Python RFE10 results](results/holdout_rfe10): 30 matched fixed-model evaluations; exactly ten fields in every fitted selector/stacking base. The report compares RFE10 against the fixed RFE20 reference rather than assuming fewer fields improve prediction.
-- [Measured Spark Colab baseline](results/spark_colab_reference): 15 native model/seed evaluations recovered from the author's saved notebook display, with source commit and six-decimal display precision recorded.
+- [Measured Spark holdout results](results/spark_holdout_drive): full-precision saved outputs for 15 native model/seed evaluations used in the report. The earlier [notebook-display reference](results/spark_colab_reference) remains archived with its six-decimal precision documented.
+- [Observed Research Paper LOPO results](LOPO/README.md): five model families, each evaluated across all 319 held-out patients, using three-fold training CV for Optuna. These are observed pooled predictions, separate from the five-seed holdout results.
 - New native Spark CART20/RFE20/RFE10 code is implemented and includes runnable integration checks. Its scores enter the report only after completing a Spark extension run; the current report marks those additional native results as pending.
 
 The report includes AUC, sensitivity, specificity, accuracy, confusion matrices and further prototype metrics, with highest execution-table means bold. Five overlapping holdouts describe partition sensitivity rather than independent clinical replication. Test data never supplies the tuning objective.

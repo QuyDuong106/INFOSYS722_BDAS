@@ -14,5 +14,54 @@
     "06_correlation_heatmap.png"
   ],
   "evidence": "PNG outputs extracted from saved author Colab execution; no local Spark rerun",
-  "computation": "Spark aggregates, histogram bins, grouped approximate quartiles, and Pearson correlation; Matplotlib renders collected summaries"
+  "computation": "Spark aggregates, histogram bins, grouped approximate quartiles, and Pearson correlation; Matplotlib renders collected summaries",
+  "latest_distribution_outputs": {
+    "source_notebook": "PySpark/spark_visualization_colab.ipynb",
+    "archive_notebook": "all_continuous_colab_2026-10-15.ipynb",
+    "notebook_sha256": "f4bd870a1595619b6f443fab50a3c27094d1dd77e5338122c0b9fc765126d33b",
+    "retrieved_date": "2026-10-15",
+    "source": "Saved author Colab execution in local notebook; not a new local Spark run",
+    "predictors": [
+      "age",
+      "height",
+      "weight",
+      "bmi",
+      "tbw",
+      "ecw",
+      "icw",
+      "ecf_tbw",
+      "tbfr_pct",
+      "lm_pct",
+      "protein_pct",
+      "vfr",
+      "bm",
+      "mm",
+      "obesity_pct",
+      "tfc",
+      "vfa",
+      "vma_kg",
+      "glucose",
+      "tc",
+      "ldl",
+      "hdl",
+      "triglyceride",
+      "ast",
+      "alt",
+      "alp",
+      "creatinine",
+      "gfr",
+      "crp",
+      "hgb",
+      "vitamin_d"
+    ],
+    "subplot_grid": [
+      8,
+      4
+    ],
+    "visible_panels": 31,
+    "figures": {
+      "03_continuous_distributions.png": "d650b4dbee6501546c3fb51069a65569032de6756f5944715d45ab8b9a163331",
+      "04_distributions_by_outcome.png": "d8f54732d9ce9ebd274225eff3cf1f0f597a92b10c74c889e7815c62d6c3d52d"
+    }
+  }
 }
